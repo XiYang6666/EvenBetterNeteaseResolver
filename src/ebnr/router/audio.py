@@ -52,6 +52,7 @@ class PostAudioData:
     ids: Optional[list[int]]
     id: Optional[int]
     link: Optional[str]
+    quality: Quality = Quality.STANDARD
 
     def __post_init__(self):
         if not self.ids and not self.id and not self.link:
@@ -61,9 +62,9 @@ class PostAudioData:
 @router.post("/")
 async def audio_post(data: PostAudioData = Body(...)):
     if data.ids:
-        return await get_audio([int(i) for i in data.ids])
+        return await get_audio([int(i) for i in data.ids], quality=data.quality)
     elif data.id:
-        result = await get_audio([data.id])
+        result = await get_audio([data.id], quality=data.quality)
         if not result:
             raise HTTPException(404, "Song Not Found")
         return result[0]
@@ -72,7 +73,7 @@ async def audio_post(data: PostAudioData = Body(...)):
         assert isinstance(url.query, str)
         parser_qs = urllib.parse.parse_qs(url.query)
         id = int(parser_qs["id"][0])
-        result = await get_audio([id])
+        result = await get_audio([id], quality=data.quality)
         if not result:
             raise HTTPException(404, "Song Not Found")
         return result[0]
