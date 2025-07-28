@@ -1,0 +1,7 @@
+**/*.egg-info
+**/__pycache__
+.venv
+.vscode
+
+/data/*
+!/data/cookie.example.json

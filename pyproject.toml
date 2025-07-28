@@ -1,0 +1,25 @@
+[project]
+name = "EvenBetterNeteaseResolver"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [{ name = "XiYang6666", email = "1782356858@qq.com" }]
+dependencies = [
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+    "httpx[http2]>=0.28.1",
+    "cryptography>=45.0.5",
+    "qrcode[pil]>=8.2",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = { text = "MIT" }
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+start = "uvicorn ebnr:app --reload"
+
+[tool.ruff.lint]
+extend-select = ["I"]
