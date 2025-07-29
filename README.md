@@ -90,3 +90,9 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 `id`, `link` 至少应传入一个, 优先级从上至下.
 
+## 配置
+
+配置文件在项目根目录下的 `config.toml` 中, 可以使用环境变量覆盖配置.
+
+EBNR_CONCURRENCY_RESOLVE_PLAYLIST: 并发解析歌单的数量, 默认为 10
+EBNR_BASE_URL: API 根路径, 用于 meting-api 正确处理返回值, 默认为 `http://localhost:8000`

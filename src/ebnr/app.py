@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI
 
 from ebnr.config import load_config
@@ -20,13 +21,16 @@ async def lifespan(app: FastAPI):
     global is_vip
     load_config()
     load_cookies()
-    data = await raw.user.get_user_info()
-    print(data)
-    if data["code"] != 200:
+    try:
+        data = await raw.user.get_user_info()
+    except httpx.RequestError:
         is_vip = False
     else:
-        is_vip = data["viptype"] > 0
-    yield
+        if data["code"] != 200:
+            is_vip = False
+        else:
+            is_vip = data["viptype"] > 0
+        yield
 
 
 app = FastAPI(lifespan=lifespan)

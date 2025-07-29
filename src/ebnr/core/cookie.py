@@ -18,6 +18,8 @@ def get_cookies() -> dict[str, str]:
 
 def load_cookies():
     global netease_cookie
+    if not COOKIE_FILE_PATH.exists():
+        save_cookies({})
     with open(COOKIE_FILE_PATH, "r", encoding="utf-8") as f:
         netease_cookie = json.load(f)
 
