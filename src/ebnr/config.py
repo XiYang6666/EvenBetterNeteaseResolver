@@ -7,6 +7,7 @@ from dataclasses import dataclass
 class Config:
     concurrency_resolve_playlist: int
     base_url: str
+    api_cache: bool
 
 
 config: Config
@@ -28,6 +29,11 @@ def load_config():
             "EBNR_BASE_URL",
             config_file["base_url"],
         ),
+        api_cache=os.environ.get(
+            "EBNR_API_CACHE",
+            str(config_file["api_cache"]),
+        ).lower()
+        == "true",
     )
 
 

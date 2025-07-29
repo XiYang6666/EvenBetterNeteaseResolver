@@ -6,8 +6,13 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from ebnr.config import get_config
-from ebnr.core.api.song import get_audio, get_lyric, get_playlist, get_song_info
 from ebnr.core.types import SongInfo
+from ebnr.services.cached_api.song import (
+    get_audio,
+    get_lyric,
+    get_playlist,
+    get_song_info,
+)
 from ebnr.utils import with_semaphone
 
 router = APIRouter(prefix="/meting")

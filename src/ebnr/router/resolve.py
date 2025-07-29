@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
 
-from ebnr.core.api.song import get_audio
 from ebnr.core.types import Quality
+from ebnr.services.cached_api.song import get_audio
 
 router = APIRouter(prefix="/resolve")
 

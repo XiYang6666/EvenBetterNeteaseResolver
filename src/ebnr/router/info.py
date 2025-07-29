@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
 
-from ebnr.core.api.song import get_song_info
+from ebnr.services.cached_api.song import get_song_info
 
 router = APIRouter(prefix="/info")
 

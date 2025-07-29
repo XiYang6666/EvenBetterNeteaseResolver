@@ -4,8 +4,8 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
 
-from ebnr.core.api.song import get_audio
 from ebnr.core.types import Quality
+from ebnr.services.cached_api.song import get_audio
 
 router = APIRouter(prefix="/audio")
 
