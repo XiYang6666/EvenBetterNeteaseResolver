@@ -24,6 +24,8 @@ async def meting(type: str, id: int, server: Optional[str] = None):
             raise HTTPException(404, "Song Not Found")
         url_info = url_info_list[0]
         song_info = song_info_list[0]
+        if url_info is None:
+            raise HTTPException(404, "Song Not Found")
 
         return [
             {
@@ -39,6 +41,8 @@ async def meting(type: str, id: int, server: Optional[str] = None):
         if not url_info_list:
             raise HTTPException(404, "Song Not Found")
         url_info = url_info_list[0]
+        if url_info is None:
+            raise HTTPException(404, "Song Not Found")
         return RedirectResponse(url_info.url)
     elif type == "lrc":
         lrc_info = await get_lyric(id)
@@ -57,6 +61,8 @@ async def meting(type: str, id: int, server: Optional[str] = None):
         async def resolve_track(track: SongInfo):
             url_info = await get_audio([track.id])
             if not url_info:
+                return None
+            if url_info[0] is None:
                 return None
             return {
                 "name": track.name,
