@@ -18,7 +18,7 @@ from ebnr.utils import with_semaphone
 router = APIRouter(prefix="/meting")
 
 
-@router.get("/")
+@router.api_route("/", methods=["GET", "HEAD"])
 async def meting(type: str, id: int, server: Optional[str] = None):
     if server is not None and server != "netease":
         raise HTTPException(400, "Unsupported Server")

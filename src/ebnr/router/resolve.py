@@ -7,7 +7,7 @@ from ebnr.services.cached_api.song import get_audio
 router = APIRouter(prefix="/resolve")
 
 
-@router.get("/{link:path}")
+@router.api_route("/{link:path}", methods=["GET", "HEAD"])
 async def resolve_link(link: str, id: int, quality: Quality = Quality.STANDARD):
     if link != "https://music.163.com/song":
         raise HTTPException(400, "Invalid Link")

@@ -9,7 +9,7 @@ from ebnr.services.cached_api.song import get_playlist
 router = APIRouter(prefix="/playlist")
 
 
-@router.get("/{link:path}")
+@router.api_route("/{link:path}", methods=["GET", "HEAD"])
 async def playlist_link(link: str, id: int):
     if link != "https://music.163.com/playlist":
         raise HTTPException(400, "Invalid Link")
@@ -17,7 +17,7 @@ async def playlist_link(link: str, id: int):
     return data
 
 
-@router.get("/")
+@router.api_route("/", methods=["GET", "HEAD"])
 async def plaulist_get(
     id: Optional[int] = None,
     link: Optional[str] = None,

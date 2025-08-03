@@ -10,7 +10,7 @@ from ebnr.services.cached_api.song import get_audio
 router = APIRouter(prefix="/audio")
 
 
-@router.get("/{link:path}")
+@router.api_route("/{link:path}", methods=["GET", "HEAD"])
 async def audio_link(link: str, id: int):
     if link != "https://music.163.com/song":
         raise HTTPException(400, "Invalid Link")
@@ -20,7 +20,7 @@ async def audio_link(link: str, id: int):
     return data[0]
 
 
-@router.get("/")
+@router.api_route("/", methods=["GET", "HEAD"])
 async def audio_query(
     id: Optional[int] = None,
     ids: Optional[str] = None,
