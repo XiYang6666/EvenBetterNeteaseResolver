@@ -21,6 +21,8 @@ distribution = true
 
 [tool.pdm.scripts]
 start = "uvicorn ebnr:app --host 0.0.0.0"
+build-docker = "docker build . --tag xiyang6666/ebnr --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple/"
+push-docker = "docker push xiyang6666/ebnr"
 
 [tool.ruff.lint]
 extend-select = ["I"]
