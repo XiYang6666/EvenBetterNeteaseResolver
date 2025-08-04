@@ -1,6 +1,6 @@
 from typing import Optional
 
-from cachetools import LFUCache
+from cachetools import LFUCache, TTLCache
 
 from ebnr.config import get_config
 from ebnr.core.api import song
@@ -14,7 +14,7 @@ from ebnr.core.types import (
     SongInfo,
 )
 
-audio_cache = LFUCache(maxsize=1024)
+audio_cache = TTLCache(maxsize=1024, ttl=3600)
 song_info_cache = LFUCache(maxsize=1024)
 lyric_cache = LFUCache(maxsize=1024)
 playlist_cache = LFUCache(maxsize=1024)
