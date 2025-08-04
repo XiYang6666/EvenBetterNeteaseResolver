@@ -4,6 +4,14 @@
 
 灵感来源: [Netease_url](https://github.com/Suxiaoqinx/Netease_url)
 
+示例 API: `https://ebnr.xiyang6666.top`
+
+## 部署
+
+克隆项目并安装依赖, 首次启动会在 `data` 目录下生成 `cookie.json` 文件, 请自行使用浏览器登录网易云音乐并获取 Cookie 并填入 `cookie.json` 文件.
+
+使用 `pdm run start` 或 `python -m ebnr` 或 `uvicorn ebnr:app --host 0.0.0.0` 启动服务.
+
 ## 请求格式
 
 ### GET `/`
