@@ -10,7 +10,11 @@ class Config:
     api_cache: bool
 
 
-config: Config
+config: Config = Config(
+    concurrency_resolve_playlist=10,
+    base_url="http://localhost:8000",
+    api_cache=True,
+)
 
 
 def load_config():

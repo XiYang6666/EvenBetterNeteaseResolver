@@ -4,18 +4,17 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
 
-from ebnr.core.types import Quality
+from ebnr.core.types import AudioData, Quality
 from ebnr.services.cached_api.song import get_audio
 
-router = APIRouter(prefix="/audio")
+router = APIRouter(prefix="/audio", tags=["音频"])
 
 
 @router.api_route("/{link:path}", methods=["GET", "HEAD"])
 async def audio_link(link: str, id: int):
     if link != "https://music.163.com/song":
         raise HTTPException(400, "Invalid Link")
-    data = await get_audio([id])
-    if not data:
+    if not (data := await get_audio([id])):
         raise HTTPException(404, "Song Not Found")
     return data[0]
 
@@ -26,14 +25,17 @@ async def audio_query(
     ids: Optional[str] = None,
     link: Optional[str] = None,
     quality: Quality = Quality.STANDARD,
-):
+) -> AudioData | list[AudioData | None]:
     if not ids and not id and not link:
         raise HTTPException(400, "Invalid Request")
     if ids:
-        return await get_audio([int(i) for i in ids.split(",")], quality=quality)
+        result = await get_audio([int(i) for i in ids.split(",")], quality=quality)
+        if result is None:
+            raise HTTPException(404, "Song Not Found")
+        return result
     elif id:
         result = await get_audio([id], quality=quality)
-        if not result:
+        if not result or result[0] is None:
             raise HTTPException(404, "Song Not Found")
         return result[0]
     else:
@@ -42,7 +44,7 @@ async def audio_query(
         parser_qs = urllib.parse.parse_qs(url.query)
         id = int(parser_qs["id"][0])
         result = await get_audio([id], quality=quality)
-        if not result:
+        if not result or result[0] is None:
             raise HTTPException(404, "Song Not Found")
         return result[0]
 

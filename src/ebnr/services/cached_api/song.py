@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Any, Optional
 
-from cachetools import LFUCache, TTLCache
+from cachetools import Cache, LFUCache, TTLCache
 
 from ebnr.config import get_config
 from ebnr.core.api import song
@@ -21,50 +21,74 @@ playlist_cache = LFUCache(maxsize=1024)
 album_cache = LFUCache(maxsize=1024)
 
 
+def cache_get(cache: Cache, *key: Any):
+    if not get_config().api_cache:
+        return None
+    if key in cache:
+        return cache[key]
+    return None
+
+
+def cache_set[T](cache: Cache, value: T, *key: Any) -> T:
+    if not get_config().api_cache:
+        return value
+    if value is None:
+        return value
+    cache[key] = value
+    return value
+
+
 async def get_audio(
     ids: list[int],
     quality: Quality = Quality.STANDARD,
     encoding: Encoding = Encoding.FLAC,
-) -> Optional[list[Optional[AudioData]]]:
-    if (tuple(ids), quality, encoding) in audio_cache and get_config().api_cache:
-        return audio_cache[(tuple(ids), quality, encoding)]
-    audio_data = await song.get_audio(ids, quality, encoding)
-    if audio_data is not None and get_config().api_cache:
-        audio_cache[(tuple(ids), quality, encoding)] = audio_data
-    return audio_data
+) -> list[AudioData | None]:
+    if data := cache_get(audio_cache, tuple(ids), quality, encoding):
+        return data
+    return cache_set(
+        audio_cache,
+        await song.get_audio(ids, quality, encoding),
+        tuple(ids),
+        quality,
+        encoding,
+    )
 
 
-async def get_song_info(ids: list[int]) -> Optional[list[SongInfo]]:
-    if tuple(ids) in song_info_cache and get_config().api_cache:
-        return song_info_cache[tuple(ids)]
-    song_info_data = await song.get_song_info(ids)
-    if song_info_data is not None and get_config().api_cache:
-        song_info_cache[tuple(ids)] = song_info_data
-    return song_info_data
+async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
+    if data := cache_get(song_info_cache, *ids):
+        return data
+    return cache_set(
+        song_info_cache,
+        await song.get_song_info(ids),
+        *ids,
+    )
 
 
-async def get_lyric(id: int) -> Optional[LyricData]:
-    if id in lyric_cache and get_config().api_cache:
-        return lyric_cache[id]
-    lyric_data = await song.get_lyric(id)
-    if lyric_data is not None and get_config().api_cache:
-        lyric_cache[id] = lyric_data
-    return lyric_data
+async def get_lyric(id: int) -> LyricData:
+    if data := cache_get(lyric_cache, id):
+        return data
+    return cache_set(
+        lyric_cache,
+        await song.get_lyric(id),
+        id,
+    )
 
 
 async def get_playlist(id: int) -> Optional[Playlist]:
-    if id in playlist_cache and get_config().api_cache:
-        return playlist_cache[id]
-    playlist_data = await song.get_playlist(id)
-    if playlist_data is not None and get_config().api_cache:
-        playlist_cache[id] = playlist_data
-    return playlist_data
+    if data := cache_get(playlist_cache, id):
+        return data
+    return cache_set(
+        playlist_cache,
+        await song.get_playlist(id),
+        id,
+    )
 
 
 async def get_album(id: int) -> Optional[Album]:
-    if id in album_cache and get_config().api_cache:
-        return album_cache[id]
-    album_data = await song.get_album(id)
-    if album_data is not None and get_config().api_cache:
-        album_cache[id] = album_data
-    return album_data
+    if data := cache_get(album_cache, id):
+        return data
+    return cache_set(
+        album_cache,
+        await song.get_album(id),
+        id,
+    )

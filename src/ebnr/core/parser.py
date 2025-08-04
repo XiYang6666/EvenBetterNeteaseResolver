@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from ebnr.core.types import (
     Album,
@@ -20,12 +20,10 @@ from ebnr.core.types import (
 from ebnr.core.utils import fix_song_url
 
 
-def parse_audio_json(data: dict[str, Any]) -> Optional[AudioData]:
-    if not data.get("url"):
-        return None
+def parse_audio_json(data: dict[str, Any]) -> AudioData:
     return AudioData(
         id=data["id"],
-        url=fix_song_url(data["url"]),
+        url=(url := data.get("url")) and fix_song_url(url),
         encoding=Encoding(data["type"]) if data.get("type") else None,
         bitrate=data["br"],
         size=data["size"],

@@ -31,7 +31,7 @@ class Encoding(StrEnum):
 @dataclass
 class AudioData:
     id: int
-    url: str
+    url: Optional[str]
     # 编码
     encoding: Optional[Encoding]
     # 比特率

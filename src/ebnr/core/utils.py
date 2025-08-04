@@ -4,6 +4,7 @@ import json
 import random
 import re
 import urllib.parse
+from typing import Optional, Protocol, Sequence
 from xmlrpc.client import boolean
 
 import httpx
@@ -74,3 +75,12 @@ def fix_song_url(url: str) -> str:
     )
     result = parsed._replace(scheme="https", netloc=new_host).geturl()
     return result
+
+
+class HaveId(Protocol):
+    id: int
+
+
+def remap_result[T: HaveId](ids: list[int], list: Sequence[T]) -> list[Optional[T]]:
+    id_map = {i.id: i for i in list}
+    return [id_map.get(i) for i in ids]

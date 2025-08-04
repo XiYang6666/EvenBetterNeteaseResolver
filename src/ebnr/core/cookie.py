@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 COOKIE_FILE_PATH = Path("data/cookie.json")
-netease_cookie: dict[str, str]
+netease_cookie: dict[str, str] = {}
 
 
 def set_cookies(cookie: dict[str, str]) -> None:
