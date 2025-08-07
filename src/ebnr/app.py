@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
             is_vip = False
         else:
             is_vip = data["viptype"] > 0
+    finally:
         yield
 
 
