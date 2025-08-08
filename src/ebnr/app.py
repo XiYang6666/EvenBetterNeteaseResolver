@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 import httpx
+from cachetools import TTLCache
 from fastapi import FastAPI
 
 from ebnr.config import load_config
@@ -13,25 +14,29 @@ from ebnr.router.meting import router as meting_router
 from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
 
-is_vip: bool
+is_vip_cache = TTLCache(maxsize=1, ttl=60 * 60 * 24)
+
+
+async def is_vip() -> bool:
+    if is_vip_cache.get("is_vip") is not None:
+        return is_vip_cache["is_vip"]
+    try:
+        data = await raw.user.get_user_info()
+    except httpx.RequestError:
+        is_vip_cache["is_vip"] = False
+        return False
+    else:
+        result = data["code"] == 200 and data["viptype"] > 0
+        is_vip_cache["is_vip"] = result
+        return result
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global is_vip
     load_config()
     load_cookies()
-    try:
-        data = await raw.user.get_user_info()
-    except httpx.RequestError:
-        is_vip = False
-    else:
-        if data["code"] != 200:
-            is_vip = False
-        else:
-            is_vip = data["viptype"] > 0
-    finally:
-        yield
+    is_vip_cache["is_vip"] = await is_vip()
+    yield
 
 
 app = FastAPI(lifespan=lifespan)
@@ -39,7 +44,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root():
-    return {"message": "EBNR API Running!", "is_vip": is_vip}
+    return {"message": "EBNR API Running!", "is_vip": await is_vip()}
 
 
 app.include_router(album_router)
