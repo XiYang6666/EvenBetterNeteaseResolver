@@ -26,7 +26,7 @@ async def is_vip() -> bool:
         is_vip_cache["is_vip"] = False
         return False
     else:
-        result = data["code"] == 200 and data["account"]["vipType"] > 0
+        result = data["code"] == 200 and data.get("account", {}).get("vipType", 0) > 0
         is_vip_cache["is_vip"] = result
         return result
 
