@@ -1,9 +1,10 @@
 import json
 from typing import Optional
 
+from ebnr.core.cryto.eapi import make_eapi_header, make_eapi_params
 from ebnr.core.excaptions import NeteaseApiException
 from ebnr.core.types import Encoding, Quality
-from ebnr.core.utils import make_client, make_eapi_header, make_eapi_params
+from ebnr.core.utils import make_client
 
 
 async def get_audio(

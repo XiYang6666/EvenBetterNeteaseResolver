@@ -2,7 +2,8 @@ import json
 
 from httpx import Response
 
-from ebnr.core.utils import make_client, make_eapi_header, make_eapi_params
+from ebnr.core.cryto.eapi import make_eapi_header, make_eapi_params
+from ebnr.core.utils import make_client
 
 
 async def create_qrcode_unikey() -> dict:
