@@ -55,10 +55,11 @@ async def get_audio(
             return response.status_code == 200
 
         async def verify_urls():
-            cast(list[AudioData | None], data)
+            nonlocal data
+            data = cast(list[AudioData | None], data)
             urls = [song and song.url for song in data]
             async with httpx.AsyncClient() as client:
-                tasks = [verify_url(client, url) for url in urls]
+                tasks = [verify_url(client, url) for url in urls if url is not None]
                 return all(await asyncio.gather(*tasks))
 
         if not await verify_urls() and get_config().audio_cache_type == "pessimistic":
