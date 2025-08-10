@@ -65,7 +65,6 @@ class ArtistShort:
 class AlbumShort:
     id: int
     name: str
-    cover_url: str
     translations: Optional[list[str]]
 
 
@@ -177,6 +176,7 @@ class Album(AlbumShort):
     alias: Optional[list[str]]
     description: Optional[str]
     artists: list[ArtistShort]
+    cover_url: str
     songs: list[SongInfo]
 
 
