@@ -2,3 +2,4 @@ concurrency_resolve_playlist = 10
 base_url = "http://localhost:8000"
 api_cache = true
 audio_cache_timeout = 3600
+audio_cache_type = "optimistic"
