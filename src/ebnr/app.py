@@ -1,6 +1,9 @@
+import urllib.parse
 from contextlib import asynccontextmanager
+from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 
 from ebnr.config import load_config
 from ebnr.core.cookie import load_cookies
@@ -34,3 +37,19 @@ app.include_router(info_router)
 app.include_router(meting_router)
 app.include_router(playlist_router)
 app.include_router(resolve_router)
+
+
+@app.get("/{link:path}")
+async def root_link(link: str, id: Optional[int] = None):
+    url = urllib.parse.urlparse(link)
+    if url.hostname != "music.163.com" or id is None:
+        raise HTTPException(status_code=404, detail="Not Found")
+    match url.path:
+        case "/album":
+            return RedirectResponse(f"/album/{link}?id={id}")
+        case "/playlist":
+            return RedirectResponse(f"/playlist/{link}?id={id}")
+        case "/song":
+            return RedirectResponse(f"/info/{link}?id={id}")
+        case _:
+            raise HTTPException(status_code=404, detail="Not Found")
