@@ -17,5 +17,5 @@ async def resolve_link(link: str, id: int, quality: Quality = Quality.STANDARD):
     if not data[0]:
         raise HTTPException(404, "Could Not Get Audio")
     if not data[0].url:
-        raise HTTPException(400, "Audio Not Available")
+        raise HTTPException(404, "Audio Not Available")
     return RedirectResponse(data[0].url)

@@ -14,7 +14,7 @@ from ebnr.core.types import (
     SongInfo,
 )
 
-audio_cache = TTLCache(maxsize=1024, ttl=3600)
+audio_cache = TTLCache(maxsize=1024, ttl=get_config().audio_cache_timeout)
 song_info_cache = LFUCache(maxsize=1024)
 lyric_cache = LFUCache(maxsize=1024)
 playlist_cache = LFUCache(maxsize=1024)
@@ -43,6 +43,8 @@ async def get_audio(
     quality: Quality = Quality.STANDARD,
     encoding: Encoding = Encoding.FLAC,
 ) -> list[AudioData | None]:
+    if get_config().audio_cache_timeout == 0:
+        return await song.get_audio(ids, quality, encoding)
     if data := cache_get(audio_cache, tuple(ids), quality, encoding):
         return data
     return cache_set(

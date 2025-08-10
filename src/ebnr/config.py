@@ -8,12 +8,14 @@ class Config:
     concurrency_resolve_playlist: int
     base_url: str
     api_cache: bool
+    audio_cache_timeout: int
 
 
 config: Config = Config(
     concurrency_resolve_playlist=10,
     base_url="http://localhost:8000",
     api_cache=True,
+    audio_cache_timeout=3600,
 )
 
 
@@ -38,6 +40,12 @@ def load_config():
             str(config_file["api_cache"]),
         ).lower()
         == "true",
+        audio_cache_timeout=int(
+            os.environ.get(
+                "EBNR_AUDIO_CACHE_TIMEOUT",
+                config_file["audio_cache_timeout"],
+            )
+        ),
     )
 
 
