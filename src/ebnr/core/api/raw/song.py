@@ -88,6 +88,7 @@ async def get_playlist(id: int) -> Optional[dict]:
             request_url,
             data={
                 "id": id,
+                "n": 10000,
             },
         )
     result = response.json()
