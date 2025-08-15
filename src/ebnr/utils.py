@@ -7,12 +7,12 @@ from cachetools import TTLCache
 from ebnr.core.api import raw
 
 
-def with_semaphone(semaphone: asyncio.Semaphore):
+def with_semaphore(semaphore: asyncio.Semaphore):
     def decorator[T](
         func: Callable[..., Coroutine[Any, Any, T]],
     ) -> Callable[..., Coroutine[Any, Any, T]]:
         async def wrapper(*args, **kwargs):
-            async with semaphone:
+            async with semaphore:
                 return await func(*args, **kwargs)
 
         return wrapper

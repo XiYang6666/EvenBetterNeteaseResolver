@@ -13,7 +13,7 @@ from ebnr.services.cached_api.song import (
     get_playlist,
     get_song_info,
 )
-from ebnr.utils import with_semaphone
+from ebnr.utils import with_semaphore
 
 router = APIRouter(prefix="/meting")
 
@@ -58,7 +58,7 @@ async def meting(type: str, id: int, server: Optional[str] = None):
 
         semaphore = Semaphore(get_config().concurrency_resolve_playlist)
 
-        @with_semaphone(semaphore)
+        @with_semaphore(semaphore)
         async def resolve_track(track: SongInfo):
             return (
                 {
