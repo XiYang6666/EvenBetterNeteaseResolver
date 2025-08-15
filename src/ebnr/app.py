@@ -13,6 +13,7 @@ from ebnr.router.info import router as info_router
 from ebnr.router.meting import router as meting_router
 from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
+from ebnr.router.song import router as song_router
 from ebnr.utils import is_vip
 
 
@@ -37,6 +38,7 @@ app.include_router(info_router)
 app.include_router(meting_router)
 app.include_router(playlist_router)
 app.include_router(resolve_router)
+app.include_router(song_router)
 
 
 @app.get("/{link:path}")
