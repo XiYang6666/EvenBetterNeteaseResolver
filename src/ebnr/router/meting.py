@@ -1,4 +1,5 @@
 import asyncio
+import urllib.parse
 from asyncio import Semaphore
 from dataclasses import dataclass
 from typing import Optional
@@ -27,6 +28,16 @@ class MetingResult:
     pic: Optional[str]
     lrc: str
 
+    @classmethod
+    def from_song_info(cls, song_info: SongInfo):
+        return cls(
+            name=song_info.name,
+            artist="/".join([artist.name for artist in song_info.artists]),
+            url=get_config().base_url + f"/meting/?type=url&id={id}",
+            pic=song_info.album and song_info.album.cover_url,
+            lrc=get_config().base_url + f"/meting/?type=lrc&id={id}",
+        )
+
 
 @router.api_route("/", methods=["GET", "HEAD"])
 async def meting(type: str, id: int, server: Optional[str] = None):
@@ -36,23 +47,10 @@ async def meting(type: str, id: int, server: Optional[str] = None):
     if server is not None and server != "netease":
         raise HTTPException(400, "Unsupported Server")
     if type == "song":
-        if (
-            not (song_info_list := await get_song_info([id]))
-            or not song_info_list[0]
-            or not (url_info_list := await get_audio([id]))
-        ):
+        if not (song_info_list := await get_song_info([id])) or not song_info_list[0]:
             raise HTTPException(404, "Song Not Found")
-        url_info = url_info_list[0]
         song_info = song_info_list[0]
-        return [
-            MetingResult(
-                name=song_info.name,
-                artist="/".join([artist.name for artist in song_info.artists]),
-                url=url_info and url_info.url,
-                pic=song_info.album and song_info.album.cover_url,
-                lrc=get_config().base_url + f"/meting/?type=lrc&id={id}",
-            )
-        ]
+        return [MetingResult.from_song_info(song_info)]
     elif type == "url":
         if not (url_info_list := await get_audio([id])) or not url_info_list[0]:
             raise HTTPException(404, "Song Not Found")
@@ -73,20 +71,17 @@ async def meting(type: str, id: int, server: Optional[str] = None):
 
         @with_semaphore(semaphore)
         async def resolve_track(track: SongInfo):
-            return (
-                MetingResult(
-                    name=track.name,
-                    artist="/".join([artist.name for artist in track.artists]),
-                    url=url_info[0].url,
-                    pic=track.album and track.album.cover_url,
-                    lrc=f"{get_config().base_url}/meting/?type=lrc&id={track.id}",
-                )
-                if (url_info := await get_audio([track.id])) and url_info[0]
-                else None
-            )
+            return MetingResult.from_song_info(track)
 
         tasks = [resolve_track(track) for track in playlist_info.tracks]
         result = list(filter(lambda x: x is not None, await asyncio.gather(*tasks)))
         return result
     else:
         raise HTTPException(400, "Unsupported Type")
+
+
+@router.api_route("", methods=["GET", "HEAD"], include_in_schema=False)
+async def redirect(type: str, id: int):
+    return RedirectResponse(
+        f"/meting/?{urllib.parse.urlencode({'type': type, 'id': id})}"
+    )

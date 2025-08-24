@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
+from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import Playlist
 from ebnr.services.cached_api.song import get_playlist
@@ -10,21 +11,22 @@ from ebnr.services.cached_api.song import get_playlist
 router = APIRouter(prefix="/playlist", tags=["歌单"])
 
 
-@router.api_route("/{link:path}", methods=["GET", "HEAD"])
-async def playlist_link(
-    link: str,
-    id: int,
-):
+@router.api_route("/{link:path}", methods=["GET", "HEAD"], response_model=Playlist)
+async def playlist_link(link: str, id: int):
     """
     根据网易云音乐链接获取歌单信息, 无法获取时返回错误码 404.
     """
+    if link == "":
+        return RedirectResponse(f"/playlist?{urllib.parse.urlencode({'id': id})}")
     if link != "https://music.163.com/playlist":
         raise HTTPException(400, "Invalid Link")
     data = await get_playlist(id)
+    if not data:
+        raise HTTPException(404, "Playlist Not Found")
     return data
 
 
-@router.api_route("/", methods=["GET", "HEAD"])
+@router.api_route("", methods=["GET", "HEAD"])
 async def playlist_get(
     id: Optional[int] = None,
     link: Optional[str] = None,
@@ -40,7 +42,7 @@ async def playlist_get(
     elif id:
         result = await get_playlist(id)
         if not result:
-            raise HTTPException(404, "Song Not Found")
+            raise HTTPException(404, "Playlist Not Found")
         return result
     else:
         url = urllib.parse.urlparse(link)
@@ -49,7 +51,7 @@ async def playlist_get(
         id = int(parser_qs["id"][0])
         result = await get_playlist(id)
         if not result:
-            raise HTTPException(404, "Song Not Found")
+            raise HTTPException(404, "PLaylist Not Found")
         return result
 
 
@@ -63,7 +65,7 @@ class PostPlaylistInfo:
             raise ValueError("Invalid Request Data")
 
 
-@router.post("/")
+@router.post("")
 async def playlist_post(data: PostPlaylistInfo = Body(...)) -> Playlist:
     """
     ## 获取歌单信息
@@ -74,7 +76,7 @@ async def playlist_post(data: PostPlaylistInfo = Body(...)) -> Playlist:
     if data.id:
         result = await get_playlist(data.id)
         if not result:
-            raise HTTPException(404, "Song Not Found")
+            raise HTTPException(404, "Playlist Not Found")
         return result
     else:
         url = urllib.parse.urlparse(data.link)
@@ -83,5 +85,5 @@ async def playlist_post(data: PostPlaylistInfo = Body(...)) -> Playlist:
         id = int(parser_qs["id"][0])
         result = await get_playlist(id)
         if not result:
-            raise HTTPException(404, "Song Not Found")
+            raise HTTPException(404, "Playlist Not Found")
         return result

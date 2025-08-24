@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
+from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import Album
 from ebnr.services.cached_api.song import get_album
@@ -10,11 +11,13 @@ from ebnr.services.cached_api.song import get_album
 router = APIRouter(prefix="/album", tags=["专辑"])
 
 
-@router.api_route("/{link:path}", methods=["GET", "HEAD"])
-async def album_link(link: str, id: int) -> Album:
+@router.api_route("/{link:path}", methods=["GET", "HEAD"], response_model=Album)
+async def album_link(link: str, id: int):
     """
     根据网易云音乐链接获取专辑信息, 无法获取时返回错误码 404.
     """
+    if link == "":
+        return RedirectResponse(f"/album?{urllib.parse.urlencode({'id': id})}")
     if link != "https://music.163.com/album":
         raise HTTPException(400, "Invalid Link")
     data = await get_album(id)
@@ -23,7 +26,7 @@ async def album_link(link: str, id: int) -> Album:
     return data
 
 
-@router.api_route("/", methods=["GET", "HEAD"])
+@router.api_route("", methods=["GET", "HEAD"])
 async def album_get(
     id: Optional[int] = None,
     link: Optional[str] = None,
@@ -35,7 +38,7 @@ async def album_get(
     成功时返回 `Album`, 无法获取返回错误码 404.
     """
     if not id and not link:
-        raise ValueError("At least one of id, ids or link must be provided")
+        raise HTTPException(422, "At least one of id, ids or link must be provided")
     elif id:
         result = await get_album(id)
         if not result:
@@ -62,7 +65,7 @@ class PostPlaylistInfo:
             raise ValueError("At least one of id, ids or link must be provided")
 
 
-@router.post("/")
+@router.post("")
 async def album_post(data: PostPlaylistInfo = Body(...)) -> Album:
     """
     ## 获取专辑信息

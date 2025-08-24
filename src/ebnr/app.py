@@ -1,5 +1,6 @@
 import urllib.parse
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -15,11 +16,16 @@ from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
 from ebnr.utils import is_vip
 
+COOKIE_PATH = Path("data/cookie.json")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if not COOKIE_PATH.exists():
+        COOKIE_PATH.write_text("{}", encoding="utf-8")
+
     load_config()
-    load_cookies()
+    load_cookies(COOKIE_PATH)
     yield
 
 

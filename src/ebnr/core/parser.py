@@ -87,7 +87,7 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
                 size=data["sq"]["size"],
                 sample_rate=data["sq"].get("sr"),
             )
-            if data["sq"]
+            if data.get("sq")
             else None,
             hires=QualityInfo(
                 bitrate=data["hr"]["br"],
@@ -169,7 +169,9 @@ def parse_playlist_json(data: dict[str, Any]) -> Playlist:
             avatar_url=data["creator"]["avatarUrl"],
             background_url=data["creator"]["backgroundUrl"],
             city_code=data["creator"]["city"],
-        ),
+        )
+        if data.get("creator")
+        else None,
         tracks=[parse_song_json(track) for track in data["tracks"]],
     )
 

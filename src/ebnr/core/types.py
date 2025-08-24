@@ -163,7 +163,7 @@ class Playlist:
     cover_url: str
     track_count: int
     play_count: int
-    creator: PlaylistCreator
+    creator: Optional[PlaylistCreator]
     tracks: list[SongInfo]
 
 

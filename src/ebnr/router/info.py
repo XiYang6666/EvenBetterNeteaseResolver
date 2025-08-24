@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
+from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import SongInfo
 from ebnr.services.cached_api.song import get_song_info
@@ -10,11 +11,13 @@ from ebnr.services.cached_api.song import get_song_info
 router = APIRouter(prefix="/info", tags=["歌曲信息"])
 
 
-@router.api_route("/{link:path}", methods=["GET", "HEAD"])
-async def info_link(link: str, id: int) -> SongInfo:
+@router.api_route("/{link:path}", methods=["GET", "HEAD"], response_model=SongInfo)
+async def info_link(link: str, id: int):
     """
     根据网易云音乐链接获取歌曲信息, 无法获取时返回错误码 404.
     """
+    if link == "":
+        return RedirectResponse(f"/info?{urllib.parse.urlencode({'id': id})}")
     if link != "https://music.163.com/song":
         raise HTTPException(400, "Invalid Link")
     data = await get_song_info([id])
@@ -23,7 +26,7 @@ async def info_link(link: str, id: int) -> SongInfo:
     return data[0]
 
 
-@router.api_route("/", methods=["GET", "HEAD"])
+@router.api_route("", methods=["GET", "HEAD"])
 async def info_get(
     id: Optional[int] = None,
     ids: Optional[str] = None,
@@ -70,7 +73,7 @@ class PostSongInfo:
             raise ValueError("At least one of id, ids or link must be provided")
 
 
-@router.post("/")
+@router.post("")
 async def info_post(data: PostSongInfo = Body(...)) -> SongInfo | list[SongInfo | None]:
     """
     ## 获取音频信息

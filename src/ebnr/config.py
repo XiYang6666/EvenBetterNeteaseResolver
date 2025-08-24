@@ -56,7 +56,7 @@ def load_config():
             )
         )
         in ("optimistic", "pessimistic")
-        else "optimistic"
+        else "pessimistic"
     )
 
     config = Config(

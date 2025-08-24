@@ -11,10 +11,7 @@ router = APIRouter(prefix="/resolve", tags=["音频解析"])
     methods=["GET", "HEAD"],
     response_class=RedirectResponse,
 )
-async def resolve_link(
-    link: str,
-    id: int,
-):
+async def resolve_link(link: str, id: int):
     """
     根据网易云音乐链接解析歌曲音频, 成功时重定向到音频链接, 无法获取时返回错误码 404.
     """
@@ -25,6 +22,8 @@ async def resolve_link(
         raise HTTPException(404, "Song Not Found")
     if not data[0]:
         raise HTTPException(404, "Could Not Get Audio")
+    if not data[0].url and data[0].fee != 0:
+        raise HTTPException(404, "VIP Song")
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")
     return RedirectResponse(data[0].url)
