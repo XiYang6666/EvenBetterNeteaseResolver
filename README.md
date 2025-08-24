@@ -6,12 +6,17 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
+> [!IMPORTANT]
+> **示例 API 不支持 VIP 歌曲的解析.**
+>
+> 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
+
 ## 部署
 
 ### 运行项目
 
 1. 克隆项目并安装依赖.
-2. 在 `data` 目录下创建 `cookie.json` 文件或运行一次项目以自动生成改文件, 使用浏览器登录网易云音乐获取 Cookie 并填入该文件.
+2. 在 `data` 目录下创建 `cookie.json` 文件或运行一次项目以自动生成改文件, 使用浏览器登录网易云音乐获取 Cookie 并填入该文件. (可选)
 3. 使用 `pdm run start` 或 `python -m ebnr` 或 `uvicorn ebnr:app --host 0.0.0.0` 启动项目.
 
 ### Docker 部署
@@ -20,7 +25,7 @@
 
 ```yaml
 services:
-  mainpage:
+  ebnr:
     image: xiyang6666/ebnr:dev
     container_name: ebnr
     restart: always
