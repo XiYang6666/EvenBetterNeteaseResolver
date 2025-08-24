@@ -39,13 +39,13 @@ services:
 
 配置文件在项目根目录下的 `config.toml` 中, 可以使用环境变量覆盖配置.
 
-| 配置项                            | 默认值                | 介绍                                       |
-| --------------------------------- | --------------------- | ------------------------------------------ |
-| EBNR_CONCURRENCY_RESOLVE_PLAYLIST | 10                    | 并发解析歌单的数量                         |
-| EBNR_BASE_URL                     | http://localhost:8000 | API 根路径, 用于 meting-api 正确处理返回值 |
-| EBNR_API_CACHE                    | true                  | 是否缓存上游网易云 API 返回值              |
-| EBNR_AUDIO_CACHE_TIMEOUT          | 3600                  | 音频链接缓存时长                           |
-| EBNR_AUDIO_CACHE_TYPE             | optimistic            | 音频链接缓存策略                           |
+| 配置项                            | 默认值                | 介绍                                                   |
+| --------------------------------- | --------------------- | ------------------------------------------------------ |
+| EBNR_CONCURRENCY_RESOLVE_PLAYLIST | 10                    | 并发解析歌单的数量                                     |
+| EBNR_BASE_URL                     | http://localhost:8000 | API 根路径, 用于 meting-api 正确处理返回值             |
+| EBNR_API_CACHE                    | true                  | 是否缓存上游网易云 API 返回值                          |
+| EBNR_AUDIO_CACHE_TIMEOUT          | 3600                  | 音频链接缓存时长, 为 0 则不缓存                        |
+| EBNR_AUDIO_CACHE_TYPE             | optimistic            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效 |
 
 ## 请求格式
 
@@ -88,7 +88,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 - `ids`(可选): 歌曲 ID 列表, 对于 GET 请求, 多个 ID 用逗号分隔, 如 `ids=114514,1919810`, 对于 POST 请求, 多个 ID 放入数组中(id 为 number 类型), 如果传入则返回歌曲信息列表
 - `id`(可选): 歌曲 ID
 - `link`(可选): 歌曲分享链接
-- `quality`(可选): 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`,`sky`, `jyeffect`,`jymaster`
+- `quality`(可选): 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`, `sky`, `jyeffect`, `jymaster`
 
 `ids`, `id`,`link` 至少应传入一个, 优先级从上至下.
 
@@ -108,7 +108,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 - `ids`(可选): 歌曲 ID 列表, 对于 GET 请求, 多个 ID 用逗号分隔, 如 `ids=114514,1919810`, 对于 POST 请求, 多个 ID 放入数组中(id 为 number 类型), 如果传入则返回歌曲信息列表
 - `id`(可选): 歌曲 ID
 - `link`(可选): 歌曲链接
-- `quality`(可选): 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`,`sky`, `jyeffect`,`jymaster`
+- `quality`(可选): 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`, `sky`, `jyeffect`, `jymaster`
 
 `ids`, `id`,`link` 至少应传入一个, 优先级从上至下.
 
