@@ -44,17 +44,20 @@ async def meting(type: str, id: int, server: Optional[str] = None):
     if server is not None and server != "netease":
         raise HTTPException(400, "Unsupported Server")
     if type == "song":
-        if not (song_info_list := await get_song_info([id])) or not song_info_list[0]:
+        if not (song_info := await get_song_info([id])) or not song_info[0]:
             raise HTTPException(404, "Song Not Found")
-        song_info = song_info_list[0]
-        return [MetingResult.from_song_info(song_info)]
+        return [MetingResult.from_song_info(song_info[0])]
     elif type == "url":
-        if not (url_info_list := await get_audio([id])) or not url_info_list[0]:
+        url_info = await get_audio([id])
+        if not url_info:
             raise HTTPException(404, "Song Not Found")
-        url_info = url_info_list[0]
-        if not url_info.url:
-            raise HTTPException(400, "Song Not Available")
-        return RedirectResponse(url_info.url)
+        if not url_info[0]:
+            raise HTTPException(404, "Could Not Get Audio")
+        if not url_info[0].url and url_info[0].fee and not url_info[0].payed:
+            raise HTTPException(404, "VIP Song")
+        if not url_info[0].url:
+            raise HTTPException(404, "Audio Not Available")
+        return RedirectResponse(url_info[0].url)
     elif type == "lrc":
         if not (lrc_info := await get_lyric(id)):
             raise HTTPException(404, "Lrc Not Found")

@@ -72,7 +72,9 @@ def test_meting():
         params={"type": "url", "id": f"{VALID_SONG_ID}"},
         follow_redirects=False,
     )
-    assert response.status_code == 307
+    if response.status_code != 307:
+        response.raise_for_status()
+        assert response.status_code == 307
 
     response = client.get("/meting/", params={"type": "song", "id": f"{VALID_SONG_ID}"})
     response.raise_for_status()
@@ -109,4 +111,6 @@ def test_resolve():
         f"/resolve/https://music.163.com/song?id={VALID_SONG_ID}",
         follow_redirects=False,
     )
-    assert response.status_code == 307
+    if response.status_code != 307:
+        response.raise_for_status()
+        assert response.status_code == 307
