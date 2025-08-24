@@ -28,6 +28,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root():
+    """显示欢迎信息与 VIP 状态"""
     return {"message": "EBNR API Running!", "is_vip": await is_vip()}
 
 
@@ -39,8 +40,9 @@ app.include_router(playlist_router)
 app.include_router(resolve_router)
 
 
-@app.get("/{link:path}")
+@app.get("/{link:path}", response_class=RedirectResponse)
 async def root_link(link: str, id: Optional[int] = None):
+    """自动根据传入的网易云音乐链接重定向至对应的路由"""
     url = urllib.parse.urlparse(link)
     if url.hostname != "music.163.com" or id is None:
         raise HTTPException(status_code=404, detail="Not Found")

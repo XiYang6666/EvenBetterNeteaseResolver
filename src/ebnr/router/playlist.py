@@ -4,13 +4,20 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, HTTPException
 
+from ebnr.core.types import Playlist
 from ebnr.services.cached_api.song import get_playlist
 
-router = APIRouter(prefix="/playlist")
+router = APIRouter(prefix="/playlist", tags=["歌单"])
 
 
 @router.api_route("/{link:path}", methods=["GET", "HEAD"])
-async def playlist_link(link: str, id: int):
+async def playlist_link(
+    link: str,
+    id: int,
+):
+    """
+    根据网易云音乐链接获取歌单信息, 无法获取时返回错误码 404.
+    """
     if link != "https://music.163.com/playlist":
         raise HTTPException(400, "Invalid Link")
     data = await get_playlist(id)
@@ -18,10 +25,16 @@ async def playlist_link(link: str, id: int):
 
 
 @router.api_route("/", methods=["GET", "HEAD"])
-async def plaulist_get(
+async def playlist_get(
     id: Optional[int] = None,
     link: Optional[str] = None,
-):
+) -> Playlist:
+    """
+    ## 获取歌单信息
+
+    id, link 应至少传入一个, 传入多个时优先级 id > link.\n
+    成功时返回 `Playlist`, 无法获取时返回错误码 404.
+    """
     if not id and not link:
         raise HTTPException(400, "Invalid Request")
     elif id:
@@ -51,7 +64,13 @@ class PostPlaylistInfo:
 
 
 @router.post("/")
-async def playlist_post(data: PostPlaylistInfo = Body(...)):
+async def playlist_post(data: PostPlaylistInfo = Body(...)) -> Playlist:
+    """
+    ## 获取歌单信息
+
+    id, link 应至少传入一个, 传入多个时优先级 id > link.\n
+    成功时返回 `Playlist`, 无法获取时返回错误码 404.
+    """
     if data.id:
         result = await get_playlist(data.id)
         if not result:

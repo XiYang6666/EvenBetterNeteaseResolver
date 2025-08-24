@@ -7,11 +7,14 @@ from fastapi import APIRouter, Body, HTTPException
 from ebnr.core.types import SongInfo
 from ebnr.services.cached_api.song import get_song_info
 
-router = APIRouter(prefix="/info")
+router = APIRouter(prefix="/info", tags=["歌曲信息"])
 
 
 @router.api_route("/{link:path}", methods=["GET", "HEAD"])
 async def info_link(link: str, id: int) -> SongInfo:
+    """
+    根据网易云音乐链接获取歌曲信息, 无法获取时返回错误码 404.
+    """
     if link != "https://music.163.com/song":
         raise HTTPException(400, "Invalid Link")
     data = await get_song_info([id])
@@ -26,8 +29,15 @@ async def info_get(
     ids: Optional[str] = None,
     link: Optional[str] = None,
 ) -> SongInfo | list[SongInfo | None]:
+    """
+    ## 获取音频信息
+
+    id, ids, link 应至少传入一个, 传入多个时优先级 ids > id > link.\n
+    如果传入 id 或 link 则返回 `AudioData`, 无法获取时返回错误码 404.\n
+    如果传入 ids 则返回 `(AudioData | null)[]`, 列表对应传入的 ids 顺序, 无法获取的歌曲将用 `null` 占位.
+    """
     if not id and not ids and not link:
-        raise HTTPException(400, "Invalid Request")
+        raise ValueError("At least one of id, ids or link must be provided")
     if ids:
         result = await get_song_info([int(i) for i in ids.split(",")])
         if not result:
@@ -57,11 +67,18 @@ class PostSongInfo:
 
     def __post_init__(self):
         if not self.ids and not self.id and not self.link:
-            raise ValueError("Invalid Request Data")
+            raise ValueError("At least one of id, ids or link must be provided")
 
 
 @router.post("/")
 async def info_post(data: PostSongInfo = Body(...)) -> SongInfo | list[SongInfo | None]:
+    """
+    ## 获取音频信息
+
+    id, ids, link 应至少传入一个, 传入多个时优先级 ids > id > link.\n
+    如果传入 id 或 link 则返回 `AudioData`, 无法获取时返回错误码 404.\n
+    如果传入 ids 则返回 `(AudioData | null)[]`, 列表对应传入的 ids 顺序, 无法获取的歌曲将用 `null` 占位.
+    """
     if data.ids:
         result = await get_song_info([int(i) for i in data.ids])
         if not result:

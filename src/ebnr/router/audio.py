@@ -7,14 +7,17 @@ from fastapi import APIRouter, Body, HTTPException
 from ebnr.core.types import AudioData, Quality
 from ebnr.services.cached_api.song import get_audio
 
-router = APIRouter(prefix="/audio", tags=["音频"])
+router = APIRouter(prefix="/audio", tags=["音频信息"])
 
 
 @router.api_route("/{link:path}", methods=["GET", "HEAD"])
-async def audio_link(link: str, id: int):
+async def audio_link(link: str, id: int) -> AudioData:
+    """
+    根据网易云音乐链接获取音频信息, 无法获取时返回错误码 404.
+    """
     if link != "https://music.163.com/song":
         raise HTTPException(400, "Invalid Link")
-    if not (data := await get_audio([id])):
+    if not (data := await get_audio([id])) or data[0] is None:
         raise HTTPException(404, "Song Not Found")
     return data[0]
 
@@ -26,8 +29,15 @@ async def audio_query(
     link: Optional[str] = None,
     quality: Quality = Quality.STANDARD,
 ) -> AudioData | list[AudioData | None]:
+    """
+    ## 获取音频信息
+
+    id, ids, link 应至少传入一个, 传入多个时优先级 ids > id > link.\n
+    如果传入 id 或 link 则返回 `AudioData`, 无法获取时返回错误码 404.\n
+    如果传入 ids 则返回 `(AudioData | null)[]`, 列表对应传入的 ids 顺序, 无法获取的歌曲将用 `null` 占位.
+    """
     if not ids and not id and not link:
-        raise HTTPException(400, "Invalid Request")
+        raise ValueError("At least one of id, ids or link must be provided")
     if ids:
         result = await get_audio([int(i) for i in ids.split(",")], quality=quality)
         if result is None:
@@ -58,16 +68,25 @@ class PostAudioData:
 
     def __post_init__(self):
         if not self.ids and not self.id and not self.link:
-            raise ValueError("Invalid Request Data")
+            raise ValueError("At least one of id, ids or link must be provided")
 
 
 @router.post("/")
-async def audio_post(data: PostAudioData = Body(...)):
+async def audio_post(
+    data: PostAudioData = Body(...),
+) -> AudioData | list[AudioData | None]:
+    """
+    ## 获取音频信息
+
+    id, ids, link 应至少传入一个, 传入多个时优先级 ids > id > link.\n
+    如果传入 id 或 link 则返回 `AudioData`, 无法获取时返回错误码 404.\n
+    如果传入 ids 则返回 `(AudioData | null)[]`, 列表对应传入的 ids 顺序, 无法获取的歌曲将用 `null` 占位.
+    """
     if data.ids:
         return await get_audio([int(i) for i in data.ids], quality=data.quality)
     elif data.id:
         result = await get_audio([data.id], quality=data.quality)
-        if not result:
+        if not result or result[0] is None:
             raise HTTPException(404, "Song Not Found")
         return result[0]
     else:
@@ -76,6 +95,6 @@ async def audio_post(data: PostAudioData = Body(...)):
         parser_qs = urllib.parse.parse_qs(url.query)
         id = int(parser_qs["id"][0])
         result = await get_audio([id], quality=data.quality)
-        if not result:
+        if not result or result[0] is None:
             raise HTTPException(404, "Song Not Found")
         return result[0]

@@ -12,6 +12,9 @@ router = APIRouter(prefix="/album", tags=["专辑"])
 
 @router.api_route("/{link:path}", methods=["GET", "HEAD"])
 async def album_link(link: str, id: int) -> Album:
+    """
+    根据网易云音乐链接获取专辑信息, 无法获取时返回错误码 404.
+    """
     if link != "https://music.163.com/album":
         raise HTTPException(400, "Invalid Link")
     data = await get_album(id)
@@ -25,8 +28,14 @@ async def album_get(
     id: Optional[int] = None,
     link: Optional[str] = None,
 ) -> Album:
+    """
+    ## 获取专辑信息
+
+    id, link 应至少传入一个, 传入多个时优先级 id > link.\n
+    成功时返回 `Album`, 无法获取返回错误码 404.
+    """
     if not id and not link:
-        raise HTTPException(400, "Invalid Request")
+        raise ValueError("At least one of id, ids or link must be provided")
     elif id:
         result = await get_album(id)
         if not result:
@@ -50,11 +59,17 @@ class PostPlaylistInfo:
 
     def __post_init__(self):
         if not self.id and not self.link:
-            raise ValueError("Invalid Request Data")
+            raise ValueError("At least one of id, ids or link must be provided")
 
 
 @router.post("/")
 async def album_post(data: PostPlaylistInfo = Body(...)) -> Album:
+    """
+    ## 获取专辑信息
+
+    id, link 应至少传入一个, 传入多个时优先级 id > link.\n
+    成功时返回 `Album`, 无法获取返回错误码 404.
+    """
     if data.id:
         result = await get_album(data.id)
         if not result:

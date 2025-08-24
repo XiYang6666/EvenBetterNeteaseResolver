@@ -59,6 +59,7 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
             id=data["al"]["id"],
             name=data["al"]["name"],
             translations=data["al"].get("tns"),
+            cover_url=data["al"].get("picUrl"),
         )
         if data.get("al")
         else None,
