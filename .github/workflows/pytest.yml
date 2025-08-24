@@ -22,7 +22,7 @@ jobs:
 
       - name: Write cookie to file
         run: |
-          echo "${{ secrets.NETEASE_COOKIE }}" > data/cookie.json
+          echo '${{ secrets.NETEASE_COOKIE }}' > data/cookie.json
           chmod 600 data/cookie.json
 
       - name: Run pytest
