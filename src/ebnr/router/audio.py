@@ -11,7 +11,8 @@ from ebnr.services.cached_api.song import get_audio
 router = APIRouter(prefix="/audio", tags=["音频信息"])
 
 
-@router.api_route("/{link:path}", methods=["GET", "HEAD"], response_model=AudioData)
+@router.get("/{link:path}", response_model=AudioData)
+@router.head("/{link:path}", include_in_schema=False)
 async def audio_link(link: str, id: int):
     """
     根据网易云音乐链接获取音频信息, 无法获取时返回错误码 404.
@@ -25,7 +26,8 @@ async def audio_link(link: str, id: int):
     return data[0]
 
 
-@router.api_route("", methods=["GET", "HEAD"])
+@router.get("")
+@router.head("", include_in_schema=False)
 async def audio_query(
     id: Optional[int] = None,
     ids: Optional[str] = None,

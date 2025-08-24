@@ -36,7 +36,8 @@ class MetingResult:
         )
 
 
-@router.api_route("/", methods=["GET", "HEAD"])
+@router.get("/")
+@router.head("/", include_in_schema=False)
 async def meting(type: str, id: int, server: Optional[str] = None):
     """
     meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-api)

@@ -11,7 +11,8 @@ from ebnr.services.cached_api.song import get_album
 router = APIRouter(prefix="/album", tags=["专辑"])
 
 
-@router.api_route("/{link:path}", methods=["GET", "HEAD"], response_model=Album)
+@router.get("/{link:path}", response_model=Album)
+@router.head("/{link:path}", include_in_schema=False)
 async def album_link(link: str, id: int):
     """
     根据网易云音乐链接获取专辑信息, 无法获取时返回错误码 404.
@@ -26,7 +27,8 @@ async def album_link(link: str, id: int):
     return data
 
 
-@router.api_route("", methods=["GET", "HEAD"])
+@router.get("")
+@router.head("", include_in_schema=False)
 async def album_get(
     id: Optional[int] = None,
     link: Optional[str] = None,

@@ -6,11 +6,8 @@ from ebnr.services.cached_api.song import get_audio
 router = APIRouter(prefix="/resolve", tags=["音频解析"])
 
 
-@router.api_route(
-    "/{link:path}",
-    methods=["GET", "HEAD"],
-    response_class=RedirectResponse,
-)
+@router.get("/{link:path}", response_class=RedirectResponse)
+@router.head("/{link:path}", include_in_schema=False)
 async def resolve_link(link: str, id: int):
     """
     根据网易云音乐链接解析歌曲音频, 成功时重定向到音频链接, 无法获取时返回错误码 404.
