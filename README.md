@@ -41,7 +41,6 @@ services:
 
 | 配置项                            | 默认值                | 介绍                                                   |
 | --------------------------------- | --------------------- | ------------------------------------------------------ |
-| EBNR_CONCURRENCY_RESOLVE_PLAYLIST | 10                    | 并发解析歌单的数量                                     |
 | EBNR_BASE_URL                     | http://localhost:8000 | API 根路径, 用于 meting-api 正确处理返回值             |
 | EBNR_API_CACHE                    | true                  | 是否缓存上游网易云 API 返回值                          |
 | EBNR_AUDIO_CACHE_TIMEOUT          | 3600                  | 音频链接缓存时长, 为 0 则不缓存                        |

@@ -1,6 +1,4 @@
-import asyncio
 import urllib.parse
-from asyncio import Semaphore
 from dataclasses import dataclass
 from typing import Optional
 
@@ -15,7 +13,6 @@ from ebnr.services.cached_api.song import (
     get_playlist,
     get_song_info,
 )
-from ebnr.utils import with_semaphore
 
 router = APIRouter(prefix="/meting", tags=["meting-api 兼容接口"])
 
@@ -66,15 +63,7 @@ async def meting(type: str, id: int, server: Optional[str] = None):
     elif type == "playlist":
         if not (playlist_info := await get_playlist(id)):
             raise HTTPException(404, "Playlist Not Found")
-
-        semaphore = Semaphore(get_config().concurrency_resolve_playlist)
-
-        @with_semaphore(semaphore)
-        async def resolve_track(track: SongInfo):
-            return MetingResult.from_song_info(track)
-
-        tasks = [resolve_track(track) for track in playlist_info.tracks]
-        result = list(filter(lambda x: x is not None, await asyncio.gather(*tasks)))
+        result = [MetingResult.from_song_info(track) for track in playlist_info.tracks]
         return result
     else:
         raise HTTPException(400, "Unsupported Type")

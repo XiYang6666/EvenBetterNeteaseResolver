@@ -6,7 +6,6 @@ from typing import Literal
 
 @dataclass
 class Config:
-    concurrency_resolve_playlist: int
     base_url: str
     api_cache: bool
     audio_cache_timeout: int
@@ -14,7 +13,6 @@ class Config:
 
 
 config: Config = Config(
-    concurrency_resolve_playlist=10,
     base_url="http://localhost:8000",
     api_cache=True,
     audio_cache_timeout=3600,
@@ -26,12 +24,6 @@ def load_config():
     global config
     with open("config.toml", "rb") as f:
         config_file = tomllib.load(f)
-
-    concurrency_resolve_playlist = (
-        int(val)
-        if (val := os.environ.get("EBNR_CONCURRENCY_RESOLVE_PLAYLIST")) is not None
-        else config_file["concurrency_resolve_playlist"]
-    )
 
     base_url = os.environ.get(
         "EBNR_BASE_URL",
@@ -60,7 +52,6 @@ def load_config():
     )
 
     config = Config(
-        concurrency_resolve_playlist=concurrency_resolve_playlist,
         base_url=base_url,
         api_cache=api_cache,
         audio_cache_timeout=audio_cache_timeout,
