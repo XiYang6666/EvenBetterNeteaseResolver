@@ -32,8 +32,8 @@ def parse_audio_json(data: dict[str, Any]) -> AudioData:
         sample_rate=data["sr"],
         gain=data["gain"],
         peak=data["peak"],
-        payed=data["payed"],
-        fee=data["fee"],
+        payed=data["payed"] != 0,
+        fee=data["fee"] != 0,
     )
 
 

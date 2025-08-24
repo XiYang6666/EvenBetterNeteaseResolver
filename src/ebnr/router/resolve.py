@@ -22,7 +22,7 @@ async def resolve_link(link: str, id: int):
         raise HTTPException(404, "Song Not Found")
     if not data[0]:
         raise HTTPException(404, "Could Not Get Audio")
-    if not data[0].url and data[0].fee != 0:
+    if not data[0].url and data[0].fee and not data[0].payed:
         raise HTTPException(404, "VIP Song")
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")

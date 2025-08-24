@@ -49,8 +49,8 @@ class AudioData:
     peak: float
     # 是否已付费
     payed: bool
-    # 费用类型
-    fee: int
+    # 是否付费
+    fee: bool
 
 
 @dataclass
