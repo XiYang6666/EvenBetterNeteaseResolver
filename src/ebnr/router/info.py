@@ -65,7 +65,7 @@ async def info_get(
 
 
 @dataclass
-class PostSongInfo:
+class PostInfo:
     ids: Optional[list[int]]
     id: Optional[int]
     link: Optional[str]
@@ -76,7 +76,7 @@ class PostSongInfo:
 
 
 @router.post("")
-async def info_post(data: PostSongInfo = Body(...)) -> SongInfo | list[SongInfo | None]:
+async def info_post(data: PostInfo = Body(...)) -> SongInfo | list[SongInfo | None]:
     """
     ## 获取音频信息
 

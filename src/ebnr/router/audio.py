@@ -65,7 +65,7 @@ async def audio_query(
 
 
 @dataclass
-class PostAudioData:
+class PostAudio:
     ids: Optional[list[int]]
     id: Optional[int]
     link: Optional[str]
@@ -78,7 +78,7 @@ class PostAudioData:
 
 @router.post("")
 async def audio_post(
-    data: PostAudioData = Body(...),
+    data: PostAudio = Body(...),
 ) -> AudioData | list[AudioData | None]:
     """
     ## 获取音频信息

@@ -58,7 +58,7 @@ async def playlist_get(
 
 
 @dataclass
-class PostPlaylistInfo:
+class PostPlaylist:
     id: Optional[int]
     link: Optional[str]
 
@@ -68,7 +68,7 @@ class PostPlaylistInfo:
 
 
 @router.post("")
-async def playlist_post(data: PostPlaylistInfo = Body(...)) -> Playlist:
+async def playlist_post(data: PostPlaylist = Body(...)) -> Playlist:
     """
     ## 获取歌单信息
 
