@@ -35,6 +35,8 @@ services:
       - EBNR_BASE_URL=https://example.com
     volumes:
       - ./data:/app/data
+    ports:
+      - 8000:8000
 ```
 
 一键部署
