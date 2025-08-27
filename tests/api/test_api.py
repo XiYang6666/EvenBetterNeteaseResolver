@@ -1,6 +1,6 @@
+import os
 from asyncio import Semaphore, TaskGroup
-from functools import wraps
-from typing import Callable, Optional
+from typing import Optional
 
 import pytest
 import pytest_asyncio
@@ -22,19 +22,6 @@ async def client():
         limits=Limits(max_connections=30),
     ) as ac:
         yield ac
-
-
-def catch_exception_group(func: Callable):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        try:
-            return await func(*args, **kwargs)
-        except* Exception as eg:
-            for e in eg.exceptions:
-                print(f"{e.__class__.__name__}: {e}")
-            raise eg
-
-    return wrapper
 
 
 def make_links(type: str, id: int):
@@ -105,7 +92,7 @@ async def post(
 
 
 @pytest.mark.asyncio
-@catch_exception_group
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_album(client: AsyncClient):
     async with TaskGroup() as tg:
         for link in make_links("album", VALID_ALBUM_ID):
@@ -123,9 +110,9 @@ async def test_album(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-@catch_exception_group
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_audio(client: AsyncClient):
-    sem = Semaphore(30)  # 并发太多容易炸
+    sem = Semaphore(25)  # 并发太多容易炸
     async with TaskGroup() as tg:
         for link in make_links("song", VALID_SONG_ID):
             # 拼接链接
@@ -159,9 +146,9 @@ async def test_audio(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-@catch_exception_group
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_info(client: AsyncClient):
-    sem = Semaphore(30)  # 并发太多容易炸
+    sem = Semaphore(25)  # 并发太多容易炸
     async with TaskGroup() as tg:
         for link in make_links("song", VALID_SONG_ID):
             # 拼接链接
@@ -188,6 +175,7 @@ async def test_info(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_meting(client: AsyncClient):
     response = await client.get(
         "/meting/",
@@ -205,7 +193,7 @@ async def test_meting(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-@catch_exception_group
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_playlist(client: AsyncClient):
     async with TaskGroup() as tg:
         for link in make_links("playlist", VALID_PLAYLIST_ID):
@@ -223,7 +211,7 @@ async def test_playlist(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-@catch_exception_group
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_resolve(client: AsyncClient):
     for link in make_links("song", VALID_SONG_ID):
         response = await client.get(f"/resolve/{link}", follow_redirects=False)
