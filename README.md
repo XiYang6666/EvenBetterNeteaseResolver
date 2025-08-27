@@ -56,7 +56,7 @@ services:
 
 访问 https://ebnr.xiyang6666.top/docs 以获取 OpenAPI 文档.
 
-支持的网易云链接格式为 `[http://|https://][y.]music.163.com[/m]/<song|album|playlist>[/<id>|?id=<id>]`
+支持的网易云链接格式为 `[http://|https://][y.]music.163.com[/m]/<song|album|playlist></<id>|?id=<id>>`
 
 ### GET `/`
 
