@@ -6,7 +6,7 @@ from ebnr import app
 VALID_ALBUM_ID = 38591089
 VALID_SONG_ID = 557581314
 VALID_SONG_ID_LIST = [557581314, 1357960252]
-VALID_PLAY_LIST_ID = 625445570
+VALID_PLAYLIST_ID = 625445570
 
 
 @pytest.fixture
@@ -70,9 +70,10 @@ def test_album(client: TestClient):
 
 
 def test_audio(client: TestClient):
-    response = client.get(f"/audio/https://music.163.com/song?id={VALID_SONG_ID}")
-    response.raise_for_status()
-    response.json()
+    for link in make_links("audio", "song", VALID_SONG_ID):
+        response = client.get(link)
+        response.raise_for_status()
+        response.json()
 
     response = client.get("/audio", params={"id": f"{VALID_SONG_ID}"})
     response.raise_for_status()
@@ -92,9 +93,10 @@ def test_audio(client: TestClient):
 
 
 def test_info(client: TestClient):
-    response = client.get(f"/info/https://music.163.com/song?id={VALID_SONG_ID}")
-    response.raise_for_status()
-    response.json()
+    for link in make_links("info", "song", VALID_SONG_ID):
+        response = client.get(link)
+        response.raise_for_status()
+        response.json()
 
     response = client.get("/info", params={"id": f"{VALID_SONG_ID}"})
     response.raise_for_status()
@@ -128,36 +130,33 @@ def test_meting(client: TestClient):
     response.json()
 
     response = client.get(
-        "/meting/", params={"type": "playlist", "id": f"{VALID_PLAY_LIST_ID}"}
+        "/meting/", params={"type": "playlist", "id": f"{VALID_PLAYLIST_ID}"}
     )
     response.raise_for_status()
     response.json()
 
 
 def test_playlist(client: TestClient):
-    response = client.get(
-        f"/playlist/https://music.163.com/playlist?id={VALID_PLAY_LIST_ID}"
-    )
-    response.raise_for_status()
-    response.json()
+    for link in make_links("playlist", "playlist", VALID_PLAYLIST_ID):
+        response = client.get(link)
+        response.raise_for_status()
+        response.json()
 
-    response = client.get("/playlist", params={"id": f"{VALID_PLAY_LIST_ID}"})
+    response = client.get("/playlist", params={"id": f"{VALID_PLAYLIST_ID}"})
     response.raise_for_status()
     response.json()
 
     response = client.get(
         "/playlist",
-        params={"link": f"https://music.163.com/playlist?id={VALID_PLAY_LIST_ID}"},
+        params={"link": f"https://music.163.com/playlist?id={VALID_PLAYLIST_ID}"},
     )
     response.raise_for_status()
     response.json()
 
 
 def test_resolve(client: TestClient):
-    response = client.get(
-        f"/resolve/https://music.163.com/song?id={VALID_SONG_ID}",
-        follow_redirects=False,
-    )
-    if response.status_code != 307:
-        response.raise_for_status()
-        assert response.status_code == 307
+    for link in make_links("resolve", "song", VALID_SONG_ID):
+        response = client.get(link, follow_redirects=False)
+        if response.status_code != 307:
+            response.raise_for_status()
+            assert response.status_code == 307
