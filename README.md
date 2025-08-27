@@ -6,7 +6,8 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
-> [!IMPORTANT] > **示例 API 不支持 VIP 歌曲的解析.**
+> [!IMPORTANT]
+> **示例 API 不支持 VIP 歌曲的解析.**
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
 
