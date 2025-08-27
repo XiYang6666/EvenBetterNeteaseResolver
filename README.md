@@ -6,8 +6,7 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
-> [!IMPORTANT]
-> **示例 API 不支持 VIP 歌曲的解析.**
+> [!IMPORTANT] > **示例 API 不支持 VIP 歌曲的解析.**
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
 
@@ -56,9 +55,13 @@ services:
 
 访问 https://ebnr.xiyang6666.top/docs 以获取 OpenAPI 文档.
 
+支持的网易云链接格式为 `[http://|https://][y.]music.163.com[/m]/<song|album|playlist>[/<id>|?id=<id>]`
+
 ### GET `/`
 
 根路径, 显示欢迎信息与 VIP 状态.
+
+支持拼接网易云分享链接, 会自动根据链接类型重定向至正确的路径.
 
 ### GET `/meting`
 
@@ -68,7 +71,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 获取歌曲信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
 
-支持直接拼接链接, 相当于传入单个 id.
+支持拼接网易云分享链接, 相当于传入单个 id.
 
 示例:
 `https://ebnr.xiyang6666.top/info/https://music.163.com/song?id=557579321`
@@ -85,7 +88,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 获取歌曲音频, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
 
-支持直接拼接链接, 相当于传入单个 id.
+支持拼接网易云分享链接, 相当于传入单个 id.
 
 示例
 `https://ebnr.xiyang6666.top/audio/https://music.163.com/song?id=557581315`
@@ -105,7 +108,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 与 `/audio` 不同, 该接口会直接重定向至歌曲的音频地址.
 
-支持直接拼接链接, 相当于传入单个 id.
+支持拼接网易云分享链接, 相当于传入单个 id.
 
 示例
 `https://ebnr.xiyang6666.top/resolve/https://music.163.com/song?id=1357953770`
@@ -123,7 +126,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 获取歌单信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
 
-支持直接拼接链接, 相当于传入单个 id.
+支持拼接网易云分享链接, 相当于传入单个 id.
 
 示例
 `https://ebnr.xiyang6666.top/playlist/https://music.163.com/playlist?id=13317821430`
@@ -139,7 +142,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 获取专辑信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
 
-支持直接拼接链接, 相当于传入单个 id.
+支持拼接网易云分享链接, 相当于传入单个 id.
 
 示例
 `https://ebnr.xiyang6666.top/album/https://music.163.com/album?id=38591089`

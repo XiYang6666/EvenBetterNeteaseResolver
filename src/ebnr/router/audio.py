@@ -7,21 +7,24 @@ from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import AudioData, Quality
 from ebnr.services.cached_api.song import get_audio
+from ebnr.utils import parse_netease_link
 
 router = APIRouter(prefix="/audio", tags=["音频信息"])
 
 
 @router.get("/{link:path}", response_model=AudioData)
 @router.head("/{link:path}", include_in_schema=False)
-async def audio_link(link: str, id: int):
+async def audio_link(link: str, id: Optional[int] = None):
     """
     根据网易云音乐链接获取音频信息, 无法获取时返回错误码 404.
     """
     if link == "":
         return RedirectResponse(f"/audio?{urllib.parse.urlencode({'id': id})}")
-    if link != "https://music.163.com/song":
+    link_info = parse_netease_link(link, id)
+    if link_info is None or link_info.type != "song":
         raise HTTPException(400, "Invalid Link")
-    if not (data := await get_audio([id])) or data[0] is None:
+    data = await get_audio([link_info.id])
+    if not (data and data[0]):
         raise HTTPException(404, "Song Not Found")
     return data[0]
 

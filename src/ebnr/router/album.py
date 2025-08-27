@@ -7,21 +7,23 @@ from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import Album
 from ebnr.services.cached_api.song import get_album
+from ebnr.utils import parse_netease_link
 
 router = APIRouter(prefix="/album", tags=["专辑"])
 
 
 @router.get("/{link:path}", response_model=Album)
 @router.head("/{link:path}", include_in_schema=False)
-async def album_link(link: str, id: int):
+async def album_link(link: str, id: Optional[int] = None):
     """
     根据网易云音乐链接获取专辑信息, 无法获取时返回错误码 404.
     """
     if link == "":
         return RedirectResponse(f"/album?{urllib.parse.urlencode({'id': id})}")
-    if link != "https://music.163.com/album":
+    link_info = parse_netease_link(link, id)
+    if link_info is None or link_info.type != "album":
         raise HTTPException(400, "Invalid Link")
-    data = await get_album(id)
+    data = await get_album(link_info.id)
     if not data:
         raise HTTPException(404, "Album Not Found")
     return data

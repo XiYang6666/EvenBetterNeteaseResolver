@@ -1,7 +1,6 @@
-import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Mapping, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
@@ -14,7 +13,7 @@ from ebnr.router.info import router as info_router
 from ebnr.router.meting import router as meting_router
 from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
-from ebnr.utils import is_vip
+from ebnr.utils import is_vip, parse_netease_link
 
 COOKIE_PATH = Path("data/cookie.json")
 
@@ -49,15 +48,12 @@ app.include_router(resolve_router)
 @app.get("/{link:path}", response_class=RedirectResponse)
 async def root_link(link: str, id: Optional[int] = None):
     """自动根据传入的网易云音乐链接重定向至对应的路由"""
-    url = urllib.parse.urlparse(link)
-    if url.hostname != "music.163.com" or id is None:
+    link_info = parse_netease_link(link, id)
+    if link_info is None:
         raise HTTPException(status_code=404, detail="Not Found")
-    match url.path:
-        case "/album":
-            return RedirectResponse(f"/album/{link}?id={id}")
-        case "/playlist":
-            return RedirectResponse(f"/playlist/{link}?id={id}")
-        case "/song":
-            return RedirectResponse(f"/info/{link}?id={id}")
-        case _:
-            raise HTTPException(status_code=404, detail="Not Found")
+    type_mapping: Mapping[Literal["song", "album", "playlist"], str] = {
+        "song": "info",
+        "album": "album",
+        "playlist": "playlist",
+    }
+    return RedirectResponse(f"/{type_mapping[link_info.type]}/{link_info.url}")

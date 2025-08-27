@@ -15,10 +15,48 @@ def client():
         yield c
 
 
+def make_links(base: str, type: str, id: int):
+    return [
+        # default
+        f"/{base}/https://music.163.com/{type}?id={id}",
+        f"/{base}/http://music.163.com/{type}?id={id}",
+        f"/{base}/music.163.com/{type}?id={id}",
+        # y.
+        f"/{base}/https://y.music.163.com/{type}?id={id}",
+        f"/{base}/http://y.music.163.com/{type}?id={id}",
+        f"/{base}/y.music.163.com/{type}?id={id}",
+        # /m
+        f"/{base}/https://music.163.com/{type}?id={id}",
+        f"/{base}/http://music.163.com/{type}?id={id}",
+        f"/{base}/music.163.com/{type}?id={id}",
+        # path param
+        f"/{base}/https://music.163.com/{type}/{id}",
+        f"/{base}/http://music.163.com/{type}/{id}",
+        f"/{base}/music.163.com/{type}/{id}",
+        # y. and /m
+        f"/{base}/https://y.music.163.com/m/{type}?id={id}",
+        f"/{base}/http://y.music.163.com/m/{type}?id={id}",
+        f"/{base}/y.music.163.com/m/{type}?id={id}",
+        # y. and path param
+        f"/{base}/https://y.music.163.com/{type}/{id}",
+        f"/{base}/http://y.music.163.com/{type}/{id}",
+        f"/{base}/y.music.163.com/{type}/{id}",
+        # /m and path param
+        f"/{base}/https://music.163.com/m/{type}/{id}",
+        f"/{base}/http://music.163.com/m/{type}/{id}",
+        f"/{base}/music.163.com/m/{type}/{id}",
+        # y. and /m and path param
+        f"/{base}/https://y.music.163.com/m/{type}/{id}",
+        f"/{base}/http://y.music.163.com/m/{type}/{id}",
+        f"/{base}/y.music.163.com/m/{type}/{id}",
+    ]
+
+
 def test_album(client: TestClient):
-    response = client.get(f"/album/https://music.163.com/album?id={VALID_ALBUM_ID}")
-    response.raise_for_status()
-    response.json()
+    for link in make_links("album", "album", VALID_ALBUM_ID):
+        response = client.get(link)
+        response.raise_for_status()
+        response.json()
 
     response = client.get("/album", params={"id": f"{VALID_ALBUM_ID}"})
     response.raise_for_status()
