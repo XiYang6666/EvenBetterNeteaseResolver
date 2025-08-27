@@ -1,6 +1,6 @@
 import urllib.parse
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, cast
 
 from fastapi import APIRouter, Body, HTTPException
 from fastapi.responses import RedirectResponse
@@ -49,11 +49,10 @@ async def album_get(
             raise HTTPException(404, "Album Not Found")
         return result
     else:
-        url = urllib.parse.urlparse(link)
-        assert isinstance(url.query, str)
-        parser_qs = urllib.parse.parse_qs(url.query)
-        id = int(parser_qs["id"][0])
-        result = await get_album(id)
+        link_info = parse_netease_link(cast(str, link))
+        if link_info is None or link_info.type != "album":
+            raise HTTPException(400, "Invalid Link")
+        result = await get_album(link_info.id)
         if not result:
             raise HTTPException(404, "Album Not Found")
         return result
@@ -61,8 +60,8 @@ async def album_get(
 
 @dataclass
 class PostAlbum:
-    id: Optional[int]
-    link: Optional[str]
+    id: Optional[int] = None
+    link: Optional[str] = None
 
     def __post_init__(self):
         if not self.id and not self.link:
@@ -70,24 +69,23 @@ class PostAlbum:
 
 
 @router.post("")
-async def album_post(data: PostAlbum = Body(...)) -> Album:
+async def album_post(body: PostAlbum = Body(...)) -> Album:
     """
     ## 获取专辑信息
 
     id, link 应至少传入一个, 传入多个时优先级 id > link.\n
     成功时返回 `Album`, 无法获取返回错误码 404.
     """
-    if data.id:
-        result = await get_album(data.id)
-        if not result:
+    if body.id:
+        data = await get_album(body.id)
+        if not data:
             raise HTTPException(404, "Album Not Found")
-        return result
+        return data
     else:
-        url = urllib.parse.urlparse(data.link)
-        assert isinstance(url.query, str)
-        parser_qs = urllib.parse.parse_qs(url.query)
-        id = int(parser_qs["id"][0])
-        result = await get_album(id)
-        if not result:
+        link_info = parse_netease_link(cast(str, body.link))
+        if link_info is None or link_info.type != "album":
+            raise HTTPException(400, "Invalid Link")
+        data = await get_album(cast(int, link_info.id))
+        if not data:
             raise HTTPException(404, "Album Not Found")
-        return result
+        return data

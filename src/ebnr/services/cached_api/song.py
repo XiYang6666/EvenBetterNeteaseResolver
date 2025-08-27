@@ -8,7 +8,7 @@ from ebnr.config import get_config
 from ebnr.core.api import song
 from ebnr.core.types import (
     Album,
-    AudioData,
+    AudioInfo,
     Encoding,
     LyricData,
     Playlist,
@@ -44,7 +44,7 @@ async def get_audio(
     ids: list[int],
     quality: Quality = Quality.STANDARD,
     encoding: Encoding = Encoding.FLAC,
-) -> list[AudioData | None]:
+) -> list[AudioInfo | None]:
     if get_config().audio_cache_timeout == 0:
         return await song.get_audio(ids, quality, encoding)
 
@@ -56,7 +56,7 @@ async def get_audio(
 
         async def verify_urls():
             nonlocal data
-            data = cast(list[AudioData | None], data)
+            data = cast(list[AudioInfo | None], data)
             urls = [song and song.url for song in data]
             async with httpx.AsyncClient() as client:
                 tasks = [verify_url(client, url) for url in urls if url is not None]

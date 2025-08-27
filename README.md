@@ -6,7 +6,7 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
-> [!IMPORTANT]
+> [!IMPORTANT] 
 > **示例 API 不支持 VIP 歌曲的解析.**
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
@@ -45,7 +45,7 @@ services:
 
 配置文件在项目根目录下的 `config.toml` 中, 可以使用环境变量覆盖配置.
 
-| 配置项                   | 默认值                | 介绍                                                   |
+| 配置项                   | 默认值                | 注释                                                   |
 | ------------------------ | --------------------- | ------------------------------------------------------ |
 | EBNR_BASE_URL            | http://localhost:8000 | API 根路径, 用于 meting-api 正确处理返回值             |
 | EBNR_API_CACHE           | true                  | 是否缓存上游网易云 API 返回值                          |
@@ -79,11 +79,14 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 请求参数:
 
-- `ids`(可选): 歌曲 ID 列表, 对于 GET 请求, 多个 ID 用逗号分隔, 如 `ids=114514,1919810`, 对于 POST 请求, 多个 ID 放入数组中(id 为 number 类型), 如果传入则返回歌曲信息列表
-- `id`(可选): 歌曲 ID
-- `link`(可选): 歌曲分享链接
+| 参数    | 必填 | GET | POST | 类型     | 注释                                                                                     |
+| ------- | ---- | --- | ---- | -------- | ---------------------------------------------------------------------------------------- |
+| `ids`   | ❌   | ❌  | ✅   | int[]    | 歌曲 ID 列表, 如果传入则返回 `SongInfo[]`                                                |
+| `id`    | ❌   | ✅  | ✅   | int      | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]`      |
+| `links` | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `SongInfo[]`                                            |
+| `link`  | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]` |
 
-`ids`, `id`, `link` 至少应传入一个, 优先级从上至下.
+`ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
 ### GET/POST `/audio`
 
@@ -96,12 +99,15 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 请求参数:
 
-- `ids`(可选): 歌曲 ID 列表, 对于 GET 请求, 多个 ID 用逗号分隔, 如 `ids=114514,1919810`, 对于 POST 请求, 多个 ID 放入数组中(id 为 number 类型), 如果传入则返回歌曲信息列表
-- `id`(可选): 歌曲 ID
-- `link`(可选): 歌曲分享链接
-- `quality`(可选): 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`, `sky`, `jyeffect`, `jymaster`
+| 参数      | 必填 | GET | POST | 类型     | 注释                                                                                           |
+| --------- | ---- | --- | ---- | -------- | ---------------------------------------------------------------------------------------------- |
+| `ids`     | ❌   | ❌  | ✅   | int[]    | 歌曲 ID 列表, 如果传入则返回 `AudioInfo[]`                                                     |
+| `id`      | ❌   | ✅  | ✅   | int      | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`          |
+| `links`   | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `AudioInfo[]`                                                 |
+| `link`    | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`     |
+| `quality` | ❌   | ✅  | ✅   | string   | 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`, `sky`, `jyeffect`, `jymaster` |
 
-`ids`, `id`,`link` 至少应传入一个, 优先级从上至下.
+`ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
 ### GET/POST `/resolve`
 
@@ -109,19 +115,10 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 与 `/audio` 不同, 该接口会直接重定向至歌曲的音频地址.
 
-支持拼接网易云分享链接, 相当于传入单个 id.
+仅支持拼接网易云分享链接.
 
 示例
 `https://ebnr.xiyang6666.top/resolve/https://music.163.com/song?id=1357953770`
-
-请求参数:
-
-- `ids`(可选): 歌曲 ID 列表, 对于 GET 请求, 多个 ID 用逗号分隔, 如 `ids=114514,1919810`, 对于 POST 请求, 多个 ID 放入数组中(id 为 number 类型), 如果传入则返回歌曲信息列表
-- `id`(可选): 歌曲 ID
-- `link`(可选): 歌曲链接
-- `quality`(可选): 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`, `sky`, `jyeffect`, `jymaster`
-
-`ids`, `id`,`link` 至少应传入一个, 优先级从上至下.
 
 ### GET/POST `/playlist`
 
@@ -134,10 +131,15 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 请求参数:
 
+| 参数   | 必填 | GET | POST | 类型   | 注释         |
+| ------ | ---- | --- | ---- | ------ | ------------ |
+| `id`   | ❌   | ✅  | ✅   | int    | 歌曲 ID      |
+| `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
+
 - `id`(可选): 歌单 ID
 - `link`(可选): 歌单分享链接
 
-`id`, `link` 至少应传入一个, 优先级从上至下.
+`id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
 ### GET/POST `/album`
 
@@ -150,7 +152,9 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 请求参数:
 
-- `id`(可选): 专辑 ID
-- `link`(可选): 专辑分享链接
+| 参数   | 必填 | GET | POST | 类型   | 注释         |
+| ------ | ---- | --- | ---- | ------ | ------------ |
+| `id`   | ❌   | ✅  | ✅   | int    | 歌曲 ID      |
+| `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
 
-`id`, `link` 至少应传入一个, 优先级从上至下.
+`id`, `link` 至少应传入一种, 传入多个时优先级从前往后.

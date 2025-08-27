@@ -29,7 +29,7 @@ class Encoding(StrEnum):
 
 
 @dataclass
-class AudioData:
+class AudioInfo:
     id: int
     url: Optional[str]
     # 编码

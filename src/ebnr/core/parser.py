@@ -6,7 +6,7 @@ from ebnr.core.types import (
     AlbumShort,
     Artist,
     ArtistShort,
-    AudioData,
+    AudioInfo,
     Encoding,
     LyricContent,
     LyricContributor,
@@ -20,8 +20,8 @@ from ebnr.core.types import (
 from ebnr.core.utils import fix_song_url
 
 
-def parse_audio_json(data: dict[str, Any]) -> AudioData:
-    return AudioData(
+def parse_audio_json(data: dict[str, Any]) -> AudioInfo:
+    return AudioInfo(
         id=data["id"],
         url=(url := data.get("url")) and fix_song_url(url),
         encoding=Encoding(data["type"]) if data.get("type") else None,
