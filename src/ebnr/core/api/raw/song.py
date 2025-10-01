@@ -106,9 +106,19 @@ async def get_playlist(id: int) -> Optional[dict]:
             request_url,
             data={
                 "id": id,
-                "n": 1000,
+                "s": 100,
+                "n": 100,
             },
         )
+    # request_url = "https://music.163.com/api/linux/forward"
+    # req_data = make_linuxapi_data(
+    #     "POST",
+    #     "https://music.163.com/api/v3/playlist/detail",
+    #     {"id": id, "n": 10000, "s": "8"},
+    # )
+    # form = make_linuxapi_form(json.dumps(req_data))
+    # async with make_client(device_type="linux") as client:
+    #     response = await client.post(request_url, data=form)
     result = response.json()
     if result["code"] == 404:
         return None
