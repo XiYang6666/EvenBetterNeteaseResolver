@@ -75,6 +75,13 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
             )
             if data.get("l")
             else None,
+            higher=QualityInfo(
+                bitrate=data["m"]["br"],
+                size=data["m"]["size"],
+                sample_rate=data["m"].get("sr"),
+            )
+            if data.get("h")
+            else None,
             exhigh=QualityInfo(
                 bitrate=data["h"]["br"],
                 size=data["h"]["size"],
@@ -96,7 +103,7 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
             )
             if data.get("hr")
             else None,
-            sky=None,
+            sky=None,  # 后面的都是通过音频信息接口获取的. 不过似乎已经没有能参考的代码了
             jyeffect=None,
             jymaster=None,
         ),

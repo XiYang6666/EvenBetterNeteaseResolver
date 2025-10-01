@@ -2,6 +2,7 @@ import json
 from typing import Optional
 
 from ebnr.core.cryto.eapi import make_eapi_header, make_eapi_params
+from ebnr.core.cryto.weapi import make_weapi_form
 from ebnr.core.excaptions import NeteaseApiException
 from ebnr.core.types import Encoding, Quality
 from ebnr.core.utils import make_client
@@ -10,7 +11,7 @@ from ebnr.core.utils import make_client
 async def get_audio(
     ids: list[int],
     quality: Quality = Quality.STANDARD,
-    encoding: Encoding = Encoding.MP3,
+    encoding: Encoding = Encoding.FLAC,
 ) -> dict:
     request_url = "https://interface3.music.163.com/eapi/song/enhance/player/url/v1"
     eapi_path = "/api/song/enhance/player/url/v1"
@@ -20,21 +21,29 @@ async def get_audio(
         "encodeType": encoding.value,
         "header": make_eapi_header(),
     }
+    if quality == Quality.SKY:
+        payload["immerseType"] = "c51"
     params = make_eapi_params(eapi_path, json.dumps(payload))
     async with make_client() as client:
         response = await client.post(request_url, data={"params": params})
     result = response.json()
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get audio data", result["code"])
+        raise NeteaseApiException("Failed to get audio info", result["code"])
     return result
 
 
 async def get_song_info(ids: list[int]) -> dict:
-    request_url = "https://interface3.music.163.com/api/v3/song/detail"
-    async with make_client() as client:
-        response = await client.post(
-            request_url, data={"c": json.dumps([{"id": id, "v": 0} for id in ids])}
+    request_url = "https://music.163.com/weapi/v3/song/detail"
+    form = make_weapi_form(
+        json.dumps(
+            {
+                "c": json.dumps([{"id": id} for id in ids]),
+                "ids": json.dumps(ids),
+            }
         )
+    )
+    async with make_client() as client:
+        response = await client.post(request_url, data=form)
     result = response.json()
     if result["code"] != 200:
         raise NeteaseApiException("Failed to get song info", result["code"])

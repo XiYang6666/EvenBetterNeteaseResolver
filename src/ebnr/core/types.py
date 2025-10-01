@@ -5,18 +5,20 @@ from typing import Optional
 
 
 class Quality(StrEnum):
-    # 标准音质
+    # 标准
     STANDARD = "standard"
-    # 极高音质
+    # 较高
+    HIGHER = "higher"
+    # 极高
     EXHIGH = "exhigh"
-    # 无损音质
+    # 无损
     LOSSLESS = "lossless"
-    # Hires音质
+    # Hi-Res
     HIRES = "hires"
-    # 沉浸环绕声
-    SKY = "sky"
     # 高清环绕声
     JYEFFECT = "jyeffect"
+    # 沉浸环绕声
+    SKY = "sky"
     # 超清母带
     JYMASTER = "jymaster"
 
@@ -83,6 +85,8 @@ class QualityInfo:
 class Qualities:
     # 标准音质(l)
     standard: Optional[QualityInfo]
+    # 高音质
+    higher: Optional[QualityInfo]
     # 极高音质(h)
     exhigh: Optional[QualityInfo]
     # 无损音质(sq)

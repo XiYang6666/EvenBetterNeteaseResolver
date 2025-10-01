@@ -6,8 +6,7 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
-> [!IMPORTANT] 
-> **示例 API 不支持 VIP 歌曲的解析.**
+> [!IMPORTANT] > **示例 API 不支持 VIP 歌曲的解析.**
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
 
@@ -88,6 +87,10 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 `ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
+已知问题:
+
+- 无法获取 `jyeffect`, `sky` 以及 `jymaster` 的音质信息, 暂时未找到对应功能的参考代码.
+
 ### GET/POST `/audio`
 
 获取歌曲音频, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
@@ -99,13 +102,13 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 请求参数:
 
-| 参数      | 必填 | GET | POST | 类型     | 注释                                                                                           |
-| --------- | ---- | --- | ---- | -------- | ---------------------------------------------------------------------------------------------- |
-| `ids`     | ❌   | ❌  | ✅   | int[]    | 歌曲 ID 列表, 如果传入则返回 `AudioInfo[]`                                                     |
-| `id`      | ❌   | ✅  | ✅   | int      | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`          |
-| `links`   | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `AudioInfo[]`                                                 |
-| `link`    | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`     |
-| `quality` | ❌   | ✅  | ✅   | string   | 音频质量, 可选 `standard`(默认), `exhigh`, `lossless`, `higres`, `sky`, `jyeffect`, `jymaster` |
+| 参数      | 必填 | GET | POST | 类型     | 注释                                                                                                    |
+| --------- | ---- | --- | ---- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `ids`     | ❌   | ❌  | ✅   | int[]    | 歌曲 ID 列表, 如果传入则返回 `AudioInfo[]`                                                              |
+| `id`      | ❌   | ✅  | ✅   | int      | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`                   |
+| `links`   | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `AudioInfo[]`                                                          |
+| `link`    | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`              |
+| `quality` | ❌   | ✅  | ✅   | string   | 音频质量, 可选 `standard`(默认), `higher`, `exhigh`, `lossless`, `hires`, `jyeffect`, `sky`, `jymaster` |
 
 `ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
