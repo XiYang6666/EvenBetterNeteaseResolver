@@ -106,8 +106,7 @@ async def get_playlist(id: int) -> Optional[dict]:
             request_url,
             data={
                 "id": id,
-                "s": 100,
-                "n": 100,
+                "n": 1000,
             },
         )
     # request_url = "https://music.163.com/api/linux/forward"

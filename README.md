@@ -87,10 +87,6 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 `ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
-已知问题:
-
-- 无法获取 `jyeffect`, `sky` 以及 `jymaster` 的音质信息, 暂时未找到对应功能的参考代码.
-
 ### GET/POST `/audio`
 
 获取歌曲音频, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
@@ -161,3 +157,8 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 | `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
 
 `id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
+
+## 已知问题
+
+- `/info` 接口无法获取 `jyeffect`, `sky` 以及 `jymaster` 的音频信息, 暂时未找到对应功能的参考代码.
+- `/playlist` 接口无法获取歌单 1000 首之后的歌.
