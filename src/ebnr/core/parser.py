@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any
 
 from ebnr.core.types import (
@@ -17,7 +16,7 @@ from ebnr.core.types import (
     QualityInfo,
     SongInfo,
 )
-from ebnr.core.utils import fix_song_url
+from ebnr.core.utils import fix_song_url, make_datetime
 
 
 def parse_audio_json(data: dict[str, Any]) -> AudioInfo:
@@ -64,7 +63,7 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
         if data.get("al")
         else None,
         music_video_id=data["mv"] or None,
-        publish_time=datetime.fromtimestamp(data["publishTime"] / 1000)
+        publish_time=make_datetime(data["publishTime"] / 1000)
         if data.get("publishTime")
         else None,
         qualities=Qualities(
@@ -80,7 +79,7 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
                 size=data["m"]["size"],
                 sample_rate=data["m"].get("sr"),
             )
-            if data.get("h")
+            if data.get("m")
             else None,
             exhigh=QualityInfo(
                 bitrate=data["h"]["br"],
@@ -103,8 +102,9 @@ def parse_song_json(data: dict[str, Any]) -> SongInfo:
             )
             if data.get("hr")
             else None,
-            sky=None,  # 后面的都是通过音频信息接口获取的. 不过似乎已经没有能参考的代码了
+            # 后面的都是通过音频信息接口获取的. 不过似乎已经没有能参考的代码了
             jyeffect=None,
+            sky=None,
             jymaster=None,
         ),
     )

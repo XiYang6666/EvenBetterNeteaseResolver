@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 
-from ebnr.core.cryto.eapi import make_eapi_header, make_eapi_params
+from ebnr.core.cryto.eapi import make_eapi_form, make_eapi_header
 from ebnr.core.cryto.weapi import make_weapi_form
 from ebnr.core.excaptions import NeteaseApiException
 from ebnr.core.types import Encoding, Quality
@@ -23,12 +23,16 @@ async def get_audio(
     }
     if quality == Quality.SKY:
         payload["immerseType"] = "c51"
-    params = make_eapi_params(eapi_path, json.dumps(payload))
+    form = make_eapi_form(eapi_path, json.dumps(payload))
     async with make_client() as client:
-        response = await client.post(request_url, data={"params": params})
+        response = await client.post(request_url, data=form)
     result = response.json()
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get audio info", result["code"])
+        raise NeteaseApiException(
+            "Failed to get audio info",
+            result["code"],
+            result.get("message"),
+        )
     return result
 
 
@@ -36,17 +40,18 @@ async def get_song_info(ids: list[int]) -> dict:
     request_url = "https://music.163.com/weapi/v3/song/detail"
     form = make_weapi_form(
         json.dumps(
-            {
-                "c": json.dumps([{"id": id} for id in ids]),
-                "ids": json.dumps(ids),
-            }
+            {"c": json.dumps([{"id": id} for id in ids]), "ids": json.dumps(ids)}
         )
     )
     async with make_client() as client:
         response = await client.post(request_url, data=form)
     result = response.json()
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get song info", result["code"])
+        raise NeteaseApiException(
+            "Failed to get song info",
+            result["code"],
+            result.get("message"),
+        )
     return result
 
 
@@ -69,7 +74,11 @@ async def get_lyric(id: int) -> dict:
         )
     result = response.json()
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get lyric", result["code"])
+        raise NeteaseApiException(
+            "Failed to get lyric",
+            result["code"],
+            result.get("message"),
+        )
     return result
 
 
@@ -78,15 +87,15 @@ async def search(keyword: str, limit: int = 10) -> dict:
     async with make_client() as client:
         response = await client.post(
             request_url,
-            data={
-                "s": keyword,
-                "type": 1,
-                "limit": limit,
-            },
+            data={"s": keyword, "type": 1, "limit": limit},
         )
     result = response.json()
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get audio data", result["code"])
+        raise NeteaseApiException(
+            "Failed to get audio data",
+            result["code"],
+            result.get("message"),
+        )
     return result
 
 
@@ -97,14 +106,18 @@ async def get_playlist(id: int) -> Optional[dict]:
             request_url,
             data={
                 "id": id,
-                "n": 10000,
+                "n": 1000,
             },
         )
     result = response.json()
     if result["code"] == 404:
         return None
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get playlist data", result["code"])
+        raise NeteaseApiException(
+            "Failed to get playlist data",
+            result["code"],
+            result.get("message"),
+        )
     return result
 
 
@@ -116,5 +129,9 @@ async def get_album(id: int) -> Optional[dict]:
     if result["code"] == 404:
         return None
     if result["code"] != 200:
-        raise NeteaseApiException("Failed to get album data", result["code"])
+        raise NeteaseApiException(
+            "Failed to get album data",
+            result["code"],
+            result.get("message"),
+        )
     return result

@@ -1,7 +1,6 @@
-from . import auth, song, user
+from . import song, user
 
 __all__ = [
-    "auth",
     "song",
     "user",
 ]
