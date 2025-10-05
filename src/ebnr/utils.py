@@ -1,7 +1,7 @@
 import re
 import urllib.parse
 from dataclasses import dataclass
-from typing import Literal, Optional, cast
+from typing import Literal, Optional
 
 import httpx
 from cachetools import TTLCache
@@ -86,15 +86,13 @@ def parse_netease_link(
 
 
 async def streaming_request(method: str, url: str, chunk_size: int = 1024):
-    response: Optional[httpx.Response] = None
+    async_client = httpx.AsyncClient()
+    response = await async_client.send(httpx.Request(method, url), stream=True)
 
     async def data_generator():
-        nonlocal response
-        async with httpx.AsyncClient() as client:
-            async with client.stream(method, url) as res:
-                response = res
-                async for chunk in res.aiter_bytes(chunk_size=chunk_size):
-                    yield chunk
+        async for chunk in response.aiter_bytes(chunk_size=chunk_size):
+            yield chunk
+        await response.aclose()
+        await async_client.aclose()
 
-    generator = data_generator()
-    return cast(httpx.Response, response), generator
+    return response, data_generator()
