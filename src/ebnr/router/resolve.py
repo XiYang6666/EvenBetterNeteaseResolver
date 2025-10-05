@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
 
+from ebnr.config import get_config
 from ebnr.services.cached_api.song import get_audio
 from ebnr.utils import parse_netease_link
 
@@ -25,4 +26,4 @@ async def resolve_link(link: str, id: Optional[int] = None):
         raise HTTPException(404, "VIP Song")
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")
-    return RedirectResponse(data[0].url)
+    return RedirectResponse(data[0].url, get_config().redirect_code)

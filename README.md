@@ -6,8 +6,7 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
-> [!IMPORTANT]
-> **示例 API 不支持 VIP 歌曲的解析.**
+> [!IMPORTANT] > **示例 API 不支持 VIP 歌曲的解析.**
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
 
@@ -51,6 +50,7 @@ services:
 | EBNR_API_CACHE           | true                  | 是否缓存上游网易云 API 返回值                          |
 | EBNR_AUDIO_CACHE_TIMEOUT | 3600                  | 音频链接缓存时长, 为 0 则不缓存                        |
 | EBNR_AUDIO_CACHE_TYPE    | optimistic            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效 |
+| EBNR_REDIRECT_CODE       | 307                   | 重定向返回码, 如果客户端不支持 307 可以使用 302        |
 
 ## 请求格式
 

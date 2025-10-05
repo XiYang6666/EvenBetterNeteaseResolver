@@ -3,3 +3,4 @@ base_url = "http://127.0.0.1:8000"
 api_cache = true
 audio_cache_timeout = 3600
 audio_cache_type = "optimistic"
+redirect_code = 307
