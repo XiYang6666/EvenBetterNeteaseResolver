@@ -32,7 +32,7 @@ async def resolve_link(link: str, id: Optional[int] = None):
     elif get_config().resolve_type == "proxy":
         async with httpx.AsyncClient() as client:
             response = await client.get(data[0].url)
-        body = response.content
+            body = response.content
         return Response(
             content=body,
             status_code=response.status_code,
