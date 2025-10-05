@@ -45,13 +45,14 @@ services:
 
 配置文件在项目根目录下的 `config.toml` 中, 可以使用环境变量覆盖配置.
 
-| 配置项                   | 默认值                | 注释                                                   |
-| ------------------------ | --------------------- | ------------------------------------------------------ |
-| EBNR_BASE_URL            | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值             |
-| EBNR_API_CACHE           | true                  | 是否缓存上游网易云 API 返回值                          |
-| EBNR_AUDIO_CACHE_TIMEOUT | 3600                  | 音频链接缓存时长, 为 0 则不缓存                        |
-| EBNR_AUDIO_CACHE_TYPE    | optimistic            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效 |
-| EBNR_REDIRECT_CODE       | 307                   | 重定向返回码, 如果客户端不支持 307 可以使用 302        |
+| 配置项                   | 默认值                | 注释                                                                     |
+| ------------------------ | --------------------- | ------------------------------------------------------------------------ |
+| EBNR_BASE_URL            | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值                               |
+| EBNR_API_CACHE           | true                  | 是否缓存上游网易云 API 返回值                                            |
+| EBNR_AUDIO_CACHE_TIMEOUT | 3600                  | 音频链接缓存时长, 为 0 则不缓存                                          |
+| EBNR_AUDIO_CACHE_TYPE    | optimistic            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效                   |
+| EBNR_RESOLVE_TYPE        | redirect              | 音频解析返回类型                                                         |
+| EBNR_REDIRECT_CODE       | 307                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 307 和 302 |
 
 ## 请求格式
 
