@@ -30,18 +30,24 @@ async def resolve_link(link: str, id: Optional[int] = None):
     if get_config().resolve_type == "redirect":
         return RedirectResponse(data[0].url, get_config().redirect_code)
     elif (get_config()).resolve_type == "proxy":
-        async with httpx.AsyncClient() as client:
-            async with client.stream("GET", data[0].url) as response:
-                headers = {
-                    "content-type": response.headers.get(
-                        "content-type", "application/octet-stream"
-                    )
-                }
+        url = data[0].url
 
-                async def generator():
+        async def generator():
+            async with httpx.AsyncClient() as client:
+                async with client.stream("GET", url) as response:
+                    nonlocal upstream_status, upstream_headers
+                    upstream_status = response.status_code
+                    upstream_headers.update(
+                        {
+                            k: v
+                            for k, v in response.headers.items()
+                            if k.lower()
+                            not in ["content-encoding", "transfer-encoding"]
+                        }
+                    )
                     async for chunk in response.aiter_bytes(chunk_size=1024):
                         yield chunk
 
-                return StreamingResponse(
-                    generator(), headers=headers, status_code=response.status_code
-                )
+        upstream_status = 200
+        upstream_headers = {}
+        return StreamingResponse(generator())
