@@ -10,6 +10,7 @@ class Config:
     api_cache: bool
     audio_cache_timeout: int
     audio_cache_type: Literal["optimistic", "pessimistic"]
+    resolve_type: Literal["redirect", "proxy"]
     redirect_code: Literal[302, 307]
 
 
@@ -18,6 +19,7 @@ config: Config = Config(
     api_cache=True,
     audio_cache_timeout=3600,
     audio_cache_type="optimistic",
+    resolve_type="redirect",
     redirect_code=307,
 )
 
@@ -29,7 +31,8 @@ def load_config():
 
     base_url = os.environ.get("EBNR_BASE_URL", config_file["base_url"])
     api_cache = (
-        str(os.environ.get("EBNR_API_CACHE", config_file["api_cache"])).lower() == "true"
+        str(os.environ.get("EBNR_API_CACHE", config_file["api_cache"])).lower()
+        == "true"
     )
     audio_cache_timeout = int(
         os.environ.get("EBNR_AUDIO_CACHE_TIMEOUT", config_file["audio_cache_timeout"])
@@ -43,6 +46,12 @@ def load_config():
         )
         in ("optimistic", "pessimistic")
         else "pessimistic"
+    )
+    resolve_type = (
+        val
+        if (val := os.environ.get("EBNR_RESOLVE_TYPE", config_file["resolve_type"]))
+        in ("redirect", "proxy")
+        else "redirect"
     )
     redirect_code = (
         val
@@ -60,6 +69,7 @@ def load_config():
         api_cache=api_cache,
         audio_cache_timeout=audio_cache_timeout,
         audio_cache_type=audio_cache_type,
+        resolve_type=resolve_type,
         redirect_code=redirect_code,
     )
 

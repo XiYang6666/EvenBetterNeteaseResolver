@@ -1,7 +1,8 @@
 from typing import Optional
 
+import httpx
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 
 from ebnr.config import get_config
 from ebnr.services.cached_api.song import get_audio
@@ -10,7 +11,7 @@ from ebnr.utils import parse_netease_link
 router = APIRouter(prefix="/resolve", tags=["音频解析"])
 
 
-@router.get("/{link:path}", response_class=RedirectResponse)
+@router.get("/{link:path}")
 @router.head("/{link:path}", include_in_schema=False)
 async def resolve_link(link: str, id: Optional[int] = None):
     """
@@ -26,4 +27,21 @@ async def resolve_link(link: str, id: Optional[int] = None):
         raise HTTPException(404, "VIP Song")
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")
-    return RedirectResponse(data[0].url, get_config().redirect_code)
+    if get_config().resolve_type == "redirect":
+        return RedirectResponse(data[0].url, get_config().redirect_code)
+    elif (get_config()).resolve_type == "proxy":
+        async with httpx.AsyncClient() as client:
+            async with client.stream("GET", data[0].url) as response:
+                headers = {
+                    "content-type": response.headers.get(
+                        "content-type", "application/octet-stream"
+                    )
+                }
+
+                async def generator():
+                    async for chunk in response.aiter_bytes(chunk_size=1024):
+                        yield chunk
+
+                return StreamingResponse(
+                    generator(), headers=headers, status_code=response.status_code
+                )
