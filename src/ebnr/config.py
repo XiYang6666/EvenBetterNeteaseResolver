@@ -10,7 +10,7 @@ class Config:
     api_cache: bool
     audio_cache_timeout: int
     audio_cache_type: Literal["optimistic", "pessimistic"]
-    resolve_type: Literal["redirect", "proxy"]
+    resolve_type: Literal["redirect", "proxy", "streaming-proxy"]
     redirect_code: Literal[302, 307]
 
 
@@ -50,7 +50,7 @@ def load_config():
     resolve_type = (
         val
         if (val := os.environ.get("EBNR_RESOLVE_TYPE", config_file["resolve_type"]))
-        in ("redirect", "proxy")
+        in ("redirect", "proxy", "streaming-proxy")
         else "redirect"
     )
     redirect_code = (

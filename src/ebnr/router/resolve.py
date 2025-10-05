@@ -1,12 +1,12 @@
 from typing import Optional
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import RedirectResponse, StreamingResponse
 
 from ebnr.config import get_config
 from ebnr.services.cached_api.song import get_audio
-from ebnr.utils import parse_netease_link
+from ebnr.utils import parse_netease_link, streaming_request
 
 router = APIRouter(prefix="/resolve", tags=["音频解析"])
 
@@ -29,25 +29,27 @@ async def resolve_link(link: str, id: Optional[int] = None):
         raise HTTPException(404, "Audio Not Available")
     if get_config().resolve_type == "redirect":
         return RedirectResponse(data[0].url, get_config().redirect_code)
-    elif (get_config()).resolve_type == "proxy":
-        url = data[0].url
-
-        async def generator():
-            async with httpx.AsyncClient() as client:
-                async with client.stream("GET", url) as response:
-                    nonlocal upstream_status, upstream_headers
-                    upstream_status = response.status_code
-                    upstream_headers.update(
-                        {
-                            k: v
-                            for k, v in response.headers.items()
-                            if k.lower()
-                            not in ["content-encoding", "transfer-encoding"]
-                        }
-                    )
-                    async for chunk in response.aiter_bytes(chunk_size=1024):
-                        yield chunk
-
-        upstream_status = 200
-        upstream_headers = {}
-        return StreamingResponse(generator())
+    elif get_config().resolve_type == "proxy":
+        async with httpx.AsyncClient() as client:
+            response = await client.get(data[0].url)
+        body = response.content
+        return Response(
+            content=body,
+            status_code=response.status_code,
+            headers={
+                k: v
+                for k, v in response.headers.items()
+                if k.lower() not in ["content-encoding", "transfer-encoding"]
+            },
+        )
+    elif get_config().resolve_type == "streaming-proxy":
+        response, generator = await streaming_request("GET", data[0].url)
+        return StreamingResponse(
+            generator,
+            status_code=response.status_code,
+            headers={
+                k: v
+                for k, v in response.headers.items()
+                if k.lower() not in ["content-encoding", "transfer-encoding"]
+            },
+        )
