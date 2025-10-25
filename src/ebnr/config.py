@@ -9,6 +9,7 @@ from typing import Literal
 class Config:
     base_url: str
     api_cache: bool
+    cache_size: int
     cache_timeout: int
     audio_cache_timeout: int
     audio_cache_type: Literal["optimistic", "pessimistic"]
@@ -20,6 +21,7 @@ class Config:
 config = Config(
     base_url="http://127.0.0.1:8000",
     api_cache=True,
+    cache_size=16384,
     cache_timeout=86400,
     audio_cache_timeout=3600,
     audio_cache_type="optimistic",
@@ -39,6 +41,7 @@ def load_config():
         str(os.environ.get("EBNR_API_CACHE", config_file["api_cache"])).lower()
         == "true"
     )
+    cache_size = int(os.environ.get("EBNR_CACHE_SIZE", config_file["cache_size"]))
     cache_timeout = int(
         os.environ.get("EBNR_CACHE_TIMEOUT", config_file["cache_timeout"])
     )
@@ -78,6 +81,7 @@ def load_config():
     config = Config(
         base_url=base_url,
         api_cache=api_cache,
+        cache_size=cache_size,
         cache_timeout=cache_timeout,
         audio_cache_timeout=audio_cache_timeout,
         audio_cache_type=audio_cache_type,

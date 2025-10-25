@@ -36,14 +36,15 @@ class SongInactive:
     id: int
 
 
+size = get_config().cache_size
 timeout = get_config().cache_timeout
 audio_timeout = get_config().audio_cache_timeout
 
-audio_cache = TTLCache[AudioCacheKey, AudioInfo](maxsize=1024, ttl=audio_timeout)
-song_cache = TTLCache[int, SongInfo](maxsize=1024, ttl=timeout)
-lyric_cache = TTLCache[int, LyricData](maxsize=1024, ttl=timeout)
-playlist_cache = TTLCache[int, Playlist](maxsize=1024, ttl=timeout)
-album_cache = TTLCache[int, Album](maxsize=1024, ttl=timeout)
+audio_cache = TTLCache[AudioCacheKey, AudioInfo](maxsize=size, ttl=audio_timeout)
+song_cache = TTLCache[int, SongInfo](maxsize=size, ttl=timeout)
+lyric_cache = TTLCache[int, LyricData](maxsize=size, ttl=timeout)
+playlist_cache = TTLCache[int, Playlist](maxsize=size, ttl=timeout)
+album_cache = TTLCache[int, Album](maxsize=size, ttl=timeout)
 
 
 async def get_audio(
