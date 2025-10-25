@@ -6,7 +6,7 @@
 
 示例 API: `https://ebnr.xiyang6666.top`
 
-> [!IMPORTANT] 
+> [!IMPORTANT]
 > **示例 API 不支持 VIP 歌曲的解析.**
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
@@ -49,7 +49,7 @@ services:
 | ------------------------ | --------------------- | ------------------------------------------------------------------------ |
 | EBNR_BASE_URL            | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值                               |
 | EBNR_API_CACHE           | true                  | 是否缓存上游网易云 API 返回值                                            |
-| EBNR_CACHE_SIZE          | 16384                 | 上游 API 数据缓存量                                                      |
+| EBNR_CACHE_SIZE          | 1024                  | 上游 API 数据缓存量                                                      |
 | EBNR_CACHE_TIMEOUT       | 86400                 | 上游 API 数据缓存时长                                                    |
 | EBNR_AUDIO_CACHE_TIMEOUT | 3600                  | 音频链接缓存时长, 为 0 则不缓存                                          |
 | EBNR_AUDIO_CACHE_TYPE    | optimistic            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效                   |
@@ -146,7 +146,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 `id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
 
-> [!TIP] 
+> [!TIP]
 > `/playlist` API 返回的 `Playlisy` 的 tracks 属性仅包含前 1000 首歌的信息, 要获取全部歌曲请调用 `/tracks`.
 
 ### GET/POST `/tracks`

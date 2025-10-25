@@ -21,7 +21,7 @@ class Config:
 config = Config(
     base_url="http://127.0.0.1:8000",
     api_cache=True,
-    cache_size=16384,
+    cache_size=1024,
     cache_timeout=86400,
     audio_cache_timeout=3600,
     audio_cache_type="optimistic",
