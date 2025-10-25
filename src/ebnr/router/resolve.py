@@ -27,6 +27,7 @@ async def resolve_link(link: str, id: Optional[int] = None):
         raise HTTPException(404, "VIP Song")
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")
+    
     if get_config().resolve_type == "redirect":
         return RedirectResponse(data[0].url, get_config().redirect_code)
     elif get_config().resolve_type == "proxy":

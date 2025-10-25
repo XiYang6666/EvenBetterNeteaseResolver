@@ -1,7 +1,8 @@
-concurrency_resolve_playlist = 10
 base_url = "http://127.0.0.1:8000"
 api_cache = true
+cache_timeout = 86400
 audio_cache_timeout = 3600
 audio_cache_type = "optimistic"
 resolve_type = "redirect"
 redirect_code = 307
+api_concurrency = 200

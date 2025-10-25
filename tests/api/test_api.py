@@ -212,6 +212,24 @@ async def test_playlist(client: AsyncClient):
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
+async def test_tracks(client: AsyncClient):
+    async with TaskGroup() as tg:
+        for link in make_links("playlist", VALID_PLAYLIST_ID):
+            # 拼接链接
+            tg.create_task(get(client, f"/playlist/{link}"))
+            # get link
+            tg.create_task(get(client, "/playlist", params={"link": link}))
+            # post link
+            tg.create_task(post(client, "/playlist", json={"link": link}))
+
+        # get id
+        tg.create_task(get(client, "/playlist", params={"id": f"{VALID_PLAYLIST_ID}"}))
+        # post id
+        tg.create_task(post(client, "/playlist", json={"id": f"{VALID_PLAYLIST_ID}"}))
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_resolve(client: AsyncClient):
     for link in make_links("song", VALID_SONG_ID):
         response = await client.get(f"/resolve/{link}", follow_redirects=False)

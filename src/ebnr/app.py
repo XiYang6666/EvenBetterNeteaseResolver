@@ -13,6 +13,7 @@ from ebnr.router.info import router as info_router
 from ebnr.router.meting import router as meting_router
 from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
+from ebnr.router.tracks import router as tracks_router
 from ebnr.utils import is_vip, parse_netease_link
 
 COOKIE_PATH = Path("data/cookie.json")
@@ -43,6 +44,7 @@ app.include_router(info_router)
 app.include_router(meting_router)
 app.include_router(playlist_router)
 app.include_router(resolve_router)
+app.include_router(tracks_router)
 
 
 @app.get("/{link:path}", response_class=RedirectResponse)

@@ -8,6 +8,7 @@ from ebnr.core.api.song import (
     get_lyric,
     get_playlist,
     get_song_info,
+    get_tracks,
     search,
 )
 
@@ -97,6 +98,12 @@ async def test_search(keyword: str):
 @pytest.mark.asyncio
 async def test_playlist(id: int):
     await get_playlist(id)
+
+
+@pytest.mark.parametrize("id", PLAYLIST_LIST)
+@pytest.mark.asyncio
+async def test_tracks(id: int):
+    await get_tracks(id)
 
 
 @pytest.mark.parametrize("id", ALBUM_LIST)

@@ -1,11 +1,16 @@
+import asyncio
 import re
 import urllib.parse
+from asyncio import Semaphore
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal, Optional, Protocol, Sequence
+from functools import wraps
+from typing import Iterable, Literal, Optional, Protocol
 
 import httpx
 
 from ebnr.core.cookie import get_cookies
+from ebnr.core.types import SongInfo
 
 COOKIES = {
     "pc": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0",
@@ -56,6 +61,44 @@ class HaveId(Protocol):
     id: int
 
 
-def remap_result[T: HaveId](ids: list[int], list: Sequence[T]) -> list[Optional[T]]:
+def remap_result[T: HaveId](ids: list[int], list: Iterable[T]) -> list[Optional[T]]:
     id_map = {i.id: i for i in list}
     return [id_map.get(i) for i in ids]
+
+
+def with_semaphore(sem: Semaphore):
+    def decorator(func):
+        if not asyncio.iscoroutinefunction(func):
+            raise TypeError("with_semaphore_async can only decorate async functions")
+
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            await sem.acquire()
+            try:
+                return await func(*args, **kwargs)
+            finally:
+                sem.release()
+
+        return wrapper
+
+    return decorator
+
+
+@dataclass
+class ExtractedTracks:
+    known: list[SongInfo]
+    unknown: list[int]
+
+
+def extract_playlist_tracks(
+    all_id: list[int],
+    known_tracks: list[SongInfo],
+    limit: int = 1000,
+    page: int = 0,
+):
+    begin_id = page * limit
+    end_id = page * limit + limit
+    id_list: list[int] = all_id[begin_id:end_id]
+    return ExtractedTracks(
+        known_tracks[begin_id:end_id], id_list[max(begin_id, 1000) : end_id]
+    )

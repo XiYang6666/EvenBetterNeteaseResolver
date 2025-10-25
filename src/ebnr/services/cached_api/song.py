@@ -1,8 +1,9 @@
 import asyncio
-from typing import Any, Optional, cast
+from dataclasses import dataclass
+from typing import Optional
 
 import httpx
-from cachetools import Cache, LFUCache, TTLCache
+from cachetools import TTLCache
 
 from ebnr.config import get_config
 from ebnr.core.api import song
@@ -15,29 +16,34 @@ from ebnr.core.types import (
     Quality,
     SongInfo,
 )
-
-audio_cache = TTLCache(maxsize=1024, ttl=get_config().audio_cache_timeout)
-song_info_cache = LFUCache(maxsize=1024)
-lyric_cache = LFUCache(maxsize=1024)
-playlist_cache = LFUCache(maxsize=1024)
-album_cache = LFUCache(maxsize=1024)
+from ebnr.core.utils import extract_playlist_tracks, with_semaphore
 
 
-def cache_get(cache: Cache, *key: Any):
-    if not get_config().api_cache:
-        return None
-    if key in cache:
-        return cache[key]
-    return None
+@dataclass(frozen=True)
+class AudioCacheKey:
+    id: int
+    quality: Quality = Quality.STANDARD
+    encoding: Encoding = Encoding.FLAC
 
 
-def cache_set[T](cache: Cache, value: T, *key: Any) -> T:
-    if not get_config().api_cache:
-        return value
-    if value is None:
-        return value
-    cache[key] = value
-    return value
+@dataclass(frozen=True)
+class AudioInactive:
+    id: int
+
+
+@dataclass(frozen=True)
+class SongInactive:
+    id: int
+
+
+timeout = get_config().cache_timeout
+audio_timeout = get_config().audio_cache_timeout
+
+audio_cache = TTLCache[AudioCacheKey, AudioInfo](maxsize=1024, ttl=audio_timeout)
+song_cache = TTLCache[int, SongInfo](maxsize=1024, ttl=timeout)
+lyric_cache = TTLCache[int, LyricData](maxsize=1024, ttl=timeout)
+playlist_cache = TTLCache[int, Playlist](maxsize=1024, ttl=timeout)
+album_cache = TTLCache[int, Album](maxsize=1024, ttl=timeout)
 
 
 async def get_audio(
@@ -45,76 +51,107 @@ async def get_audio(
     quality: Quality = Quality.STANDARD,
     encoding: Encoding = Encoding.FLAC,
 ) -> list[AudioInfo | None]:
-    if get_config().audio_cache_timeout == 0:
+    if get_config().audio_cache_timeout == 0 or not get_config().api_cache:
         return await song.get_audio(ids, quality, encoding)
 
-    if data := cache_get(audio_cache, tuple(ids), quality, encoding):
+    client = httpx.AsyncClient()
 
-        async def verify_url(client: httpx.AsyncClient, url: str):
-            response = await client.get(url)
-            return response.status_code == 200
+    @with_semaphore(get_config().api_semaphore)
+    async def verify_url(url: str):
+        response = await client.get(url)
+        return response.status_code == 200
 
-        async def verify_urls():
-            nonlocal data
-            data = cast(list[AudioInfo | None], data)
-            urls = [song and song.url for song in data]
-            async with httpx.AsyncClient() as client:
-                tasks = [verify_url(client, url) for url in urls if url is not None]
-                return all(await asyncio.gather(*tasks))
+    async def verify_cache(song_id: int):
+        key = AudioCacheKey(song_id, quality, encoding)
+        data = audio_cache.get(AudioCacheKey(song_id, quality, encoding))
+        if (
+            get_config().audio_cache_type == "pessimistic"
+            and data
+            and data.url
+            and not await verify_url(data.url)
+        ):  # 悲观缓存且校验失效
+            audio_cache.pop(key)
+            return AudioInactive(song_id)
+        elif data:
+            return data
+        else:
+            return AudioInactive(song_id)
 
-        if not await verify_urls() and get_config().audio_cache_type == "pessimistic":
-            return cache_set(
-                audio_cache,
-                await song.get_audio(ids, quality, encoding),
-                tuple(ids),
-                quality,
-                encoding,
-            )
-        return data
-    return cache_set(
-        audio_cache,
-        await song.get_audio(ids, quality, encoding),
-        tuple(ids),
-        quality,
-        encoding,
+    verify_cache_tasks = [verify_cache(song_id) for song_id in ids]
+    read_cache_result: list[AudioInfo | AudioInactive] = await asyncio.gather(
+        *verify_cache_tasks
     )
+    await client.aclose()
+
+    inactive_ids = [x.id for x in read_cache_result if isinstance(x, AudioInactive)]
+    inactive_map = dict(
+        zip(inactive_ids, await song.get_audio(inactive_ids, quality, encoding))
+    )
+
+    for song_id, audio_data in inactive_map.items():
+        if audio_data is None:
+            continue
+        key = AudioCacheKey(song_id, quality, encoding)
+        audio_cache[key] = audio_data
+
+    return [
+        inactive_map[x.id] if isinstance(x, AudioInactive) else x
+        for x in read_cache_result
+    ]
 
 
 async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
-    if data := cache_get(song_info_cache, *ids):
-        return data
-    return cache_set(
-        song_info_cache,
-        await song.get_song_info(ids),
-        *ids,
-    )
+    if not get_config().api_cache:
+        return await song.get_song_info(ids)
+
+    read_cache_result = []
+    for song_id in ids:
+        if data := song_cache.get(song_id):
+            read_cache_result.append(data)
+        else:
+            read_cache_result.append(SongInactive(song_id))
+
+    inactive_ids = [x.id for x in read_cache_result if isinstance(x, SongInactive)]
+    inactive_map = dict(zip(inactive_ids, await song.get_song_info(inactive_ids)))
+
+    for song_id, song_data in inactive_map.items():
+        if song_data is None:
+            continue
+        song_cache[song_id] = song_data
+
+    return [
+        inactive_map[x.id] if isinstance(x, SongInactive) else x
+        for x in read_cache_result
+    ]
 
 
 async def get_lyric(id: int) -> LyricData:
-    if data := cache_get(lyric_cache, id):
-        return data
-    return cache_set(
-        lyric_cache,
-        await song.get_lyric(id),
-        id,
-    )
+    if not get_config().api_cache:
+        return await song.get_lyric(id)
+    return data if (data := lyric_cache.get(id)) else await song.get_lyric(id)
 
 
 async def get_playlist(id: int) -> Optional[Playlist]:
-    if data := cache_get(playlist_cache, id):
-        return data
-    return cache_set(
-        playlist_cache,
-        await song.get_playlist(id),
-        id,
-    )
+    if not get_config().api_cache:
+        return await song.get_playlist(id)
+    return data if (data := playlist_cache.get(id)) else await song.get_playlist(id)
+
+
+async def get_tracks(
+    id: int, limit: int = 1000, page: int = 0
+) -> Optional[list[SongInfo | None]]:
+    if not get_config().api_cache:
+        return await song.get_tracks(id, limit, page)
+
+    data = playlist_cache.get(id) or await song.get_playlist(id)
+    if data is None:
+        return
+
+    extracted = extract_playlist_tracks(data.track_ids, data.tracks, limit, page)
+    return extracted.known + (await get_song_info(extracted.unknown))
 
 
 async def get_album(id: int) -> Optional[Album]:
-    if data := cache_get(album_cache, id):
-        return data
-    return cache_set(
-        album_cache,
-        await song.get_album(id),
-        id,
-    )
+    if not get_config().api_cache:
+        return await song.get_album(id)
+    return data if (data := album_cache.get(id)) else await song.get_album(id)
