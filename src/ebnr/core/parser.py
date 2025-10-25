@@ -179,6 +179,7 @@ def parse_playlist_json(data: dict[str, Any]) -> Playlist:
         )
         if data.get("creator")
         else None,
+        track_ids=[obj["id"] for obj in data["trackIds"]],
         tracks=[parse_song_json(track) for track in data["tracks"]],
     )
 

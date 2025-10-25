@@ -1,3 +1,7 @@
+import asyncio
+from itertools import chain
+from typing import Optional
+
 from ebnr.core.api import raw
 from ebnr.core.parser import (
     parse_album_json,
@@ -6,8 +10,8 @@ from ebnr.core.parser import (
     parse_playlist_json,
     parse_song_json,
 )
-from ebnr.core.types import Encoding, Quality
-from ebnr.core.utils import remap_result
+from ebnr.core.types import Encoding, Quality, SongInfo
+from ebnr.core.utils import extract_playlist_tracks, remap_result
 
 
 async def get_audio(
@@ -15,15 +19,30 @@ async def get_audio(
     quality: Quality = Quality.STANDARD,
     encoding: Encoding = Encoding.FLAC,
 ):
-    audios_data = await raw.song.get_audio(ids, quality, encoding)
-    result = [parse_audio_json(audio_data) for audio_data in audios_data["data"]]
-    return remap_result(ids, result)
+    # 2000 一批都没问题, 但大了容易超时
+    batches = [ids[i : i + 1000] for i in range(0, len(ids), 1000)]
+
+    async def get_audio_batch(current_ids: list[int]):
+        audios_data = await raw.song.get_audio(current_ids, quality, encoding)
+        return [parse_audio_json(audio_data) for audio_data in audios_data["data"]]
+
+    tasks = [get_audio_batch(current_ids) for current_ids in batches]
+
+    results = await asyncio.gather(*tasks)
+    return remap_result(ids, chain(*results))
 
 
 async def get_song_info(ids: list[int]):
-    songs_info_data = await raw.song.get_song_info(ids)
-    result = [parse_song_json(info) for info in songs_info_data["songs"]]
-    return remap_result(ids, result)
+    batches = [ids[i : i + 1000] for i in range(0, len(ids), 1000)]
+
+    async def get_song_batch(current_ids: list[int]):
+        songs_info_data = await raw.song.get_song_info(current_ids)
+        return [parse_song_json(info) for info in songs_info_data["songs"]]
+
+    tasks = [get_song_batch(current_ids) for current_ids in batches]
+
+    results = await asyncio.gather(*tasks)
+    return remap_result(ids, chain(*results))
 
 
 async def get_lyric(id: int):
@@ -40,6 +59,15 @@ async def get_playlist(id: int):
     if (playlist_data := await raw.song.get_playlist(id)) is None:
         return None
     return parse_playlist_json(playlist_data["playlist"])
+
+
+async def get_tracks(
+    id: int, limit: int = 1000, page: int = 0
+) -> Optional[list[SongInfo | None]]:
+    if (data := await get_playlist(id)) is None:
+        return None
+    extracted = extract_playlist_tracks(data.track_ids, data.tracks, limit, page)
+    return extracted.known + (await get_song_info(extracted.unknown))
 
 
 async def get_album(id: int):

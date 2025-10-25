@@ -168,6 +168,7 @@ class Playlist:
     track_count: int
     play_count: int
     creator: Optional[PlaylistCreator]
+    track_ids: list[int]
     tracks: list[SongInfo]
 
 
