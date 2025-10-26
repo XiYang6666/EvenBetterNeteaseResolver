@@ -38,13 +38,13 @@ async def root():
     return {"message": "EBNR API Running!", "is_vip": await is_vip()}
 
 
-app.include_router(album_router)
-app.include_router(audio_router)
 app.include_router(info_router)
-app.include_router(meting_router)
-app.include_router(playlist_router)
+app.include_router(audio_router)
 app.include_router(resolve_router)
+app.include_router(playlist_router)
 app.include_router(tracks_router)
+app.include_router(album_router)
+app.include_router(meting_router)
 
 
 @app.get("/{link:path}", response_class=RedirectResponse)
