@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, cast
 
 from fastapi import APIRouter, Body, HTTPException
 
@@ -16,7 +16,7 @@ async def search_get(keyword: Optional[str] = None, limit: int = 10) -> list[Son
     ## 搜索歌曲
 
     keyword 必须传入, limit 为可选项.
-    成功时返回 `SongInfo[]`, 无法获取歌单时返回错误码 404.
+    返回 `SongInfo[]`.
     """
     if not keyword:
         raise HTTPException(400, "Invalid Request")
@@ -28,6 +28,10 @@ class PostSearch:
     keyword: Optional[str] = None
     limit: int = 10
 
+    def __post_init__(self):
+        if not self.keyword:
+            raise ValueError("Invalid Request Data")
+
 
 @router.post("")
 async def search_post(body: PostSearch = Body(...)) -> list[SongInfo]:
@@ -35,8 +39,7 @@ async def search_post(body: PostSearch = Body(...)) -> list[SongInfo]:
     ## 搜索歌曲
 
     keyword 必须传入, limit 为可选项.
-    成功时返回 `SongInfo[]`, 无法获取歌单时返回错误码 404.
+    返回 `SongInfo[]`.
     """
-    if not body.keyword:
-        raise ValueError("Invalid Request Data")
-    return await search(body.keyword, body.limit)
+
+    return await search(cast(str, body.keyword), body.limit)
