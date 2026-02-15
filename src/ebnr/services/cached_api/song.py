@@ -35,6 +35,7 @@ class AudioInactive:
 class SongInactive:
     id: int
 
+
 @dataclass(frozen=True)
 class SearchCacheKey:
     keyword: str
@@ -140,13 +141,13 @@ async def get_lyric(id: int) -> LyricData:
 
 async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
     if not get_config().api_cache:
-        return await song.search(keyword , limit)
-    
+        return await song.search(keyword, limit)
+
     key = SearchCacheKey(keyword, limit)
     if data := search_cache.get(key):
         return data
     else:
-        result = await song.search(keyword , limit)
+        result = await song.search(keyword, limit)
         search_cache[key] = result
         return result
 
