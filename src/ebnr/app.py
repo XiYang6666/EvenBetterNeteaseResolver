@@ -40,12 +40,12 @@ async def root():
 
 
 app.include_router(info_router)
-app.include_router(search_router)
-app.include_router(audio_router) 
+app.include_router(audio_router)
 app.include_router(resolve_router)
 app.include_router(playlist_router)
 app.include_router(tracks_router)
 app.include_router(album_router)
+app.include_router(search_router)
 app.include_router(meting_router)
 
 

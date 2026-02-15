@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, HTTPException
 from ebnr.core.types import SongInfo
 from ebnr.services.cached_api.song import search
 
-router = APIRouter(prefix="/search", tags=["歌曲搜索"])
+router = APIRouter(prefix="/search", tags=["搜索"])
 
 
 @router.get("")

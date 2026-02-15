@@ -86,8 +86,8 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 | 参数    | 必填 | GET | POST | 类型     | 注释                                                                                     |
 | ------- | ---- | --- | ---- | -------- | ---------------------------------------------------------------------------------------- |
-| `ids`   | ❌   | ❌  | ✅   | int[]    | 歌曲 ID 列表, 如果传入则返回 `SongInfo[]`                                                |
-| `id`    | ❌   | ✅  | ✅   | int      | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]`      |
+| `ids`   | ❌   | ❌  | ✅   | number[] | 歌曲 ID 列表, 如果传入则返回 `SongInfo[]`                                                |
+| `id`    | ❌   | ✅  | ✅   | number   | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]`      |
 | `links` | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `SongInfo[]`                                            |
 | `link`  | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]` |
 
@@ -106,8 +106,8 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 | 参数      | 必填 | GET | POST | 类型     | 注释                                                                                                    |
 | --------- | ---- | --- | ---- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `ids`     | ❌   | ❌  | ✅   | int[]    | 歌曲 ID 列表, 如果传入则返回 `AudioInfo[]`                                                              |
-| `id`      | ❌   | ✅  | ✅   | int      | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`                   |
+| `ids`     | ❌   | ❌  | ✅   | number[] | 歌曲 ID 列表, 如果传入则返回 `AudioInfo[]`                                                              |
+| `id`      | ❌   | ✅  | ✅   | number   | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`                   |
 | `links`   | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `AudioInfo[]`                                                          |
 | `link`    | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`              |
 | `quality` | ❌   | ✅  | ✅   | string   | 音频质量, 可选 `standard`(默认), `higher`, `exhigh`, `lossless`, `hires`, `jyeffect`, `sky`, `jymaster` |
@@ -138,7 +138,7 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 | 参数   | 必填 | GET | POST | 类型   | 注释         |
 | ------ | ---- | --- | ---- | ------ | ------------ |
-| `id`   | ❌   | ✅  | ✅   | int    | 歌曲 ID      |
+| `id`   | ❌   | ✅  | ✅   | number | 歌曲 ID      |
 | `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
 
 - `id`(可选): 歌单 ID
@@ -162,10 +162,10 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 | 参数    | 必填            | GET | POST | 类型   | 注释         |
 | ------- | --------------- | --- | ---- | ------ | ------------ |
-| `id`    | ❌              | ✅  | ✅   | int    | 歌曲 ID      |
+| `id`    | ❌              | ✅  | ✅   | number | 歌曲 ID      |
 | `link`  | ❌              | ✅  | ✅   | string | 歌曲分享链接 |
-| `limit` | ❌(默认 100000) | ✅  | ✅   | int    | 单页歌曲数   |
-| `page`  | ❌(默认 0)      | ✅  | ✅   | int    | 页序号       |
+| `limit` | ❌(默认 100000) | ✅  | ✅   | number | 单页歌曲数   |
+| `page`  | ❌(默认 0)      | ✅  | ✅   | number | 页序号       |
 
 - `id`(可选): 歌单 ID
 - `link`(可选): 歌单分享链接
@@ -185,10 +185,21 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 | 参数   | 必填 | GET | POST | 类型   | 注释         |
 | ------ | ---- | --- | ---- | ------ | ------------ |
-| `id`   | ❌   | ✅  | ✅   | int    | 歌曲 ID      |
+| `id`   | ❌   | ✅  | ✅   | number | 歌曲 ID      |
 | `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
 
 `id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
+
+### GET/POST `/search`
+
+搜索歌曲, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
+
+请求参数:
+
+| 参数      | 必填 | GET | POST | 类型   | 注释     |
+| --------- | ---- | --- | ---- | ------ | -------- |
+| `keyword` | ✅   | ✅  | ✅   | string | 关键词   |
+| `limit`   | ❌   | ✅  | ✅   | number | 搜索条数 |
 
 ## 已知问题
 
