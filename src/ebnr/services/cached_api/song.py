@@ -35,6 +35,11 @@ class AudioInactive:
 class SongInactive:
     id: int
 
+@dataclass(frozen=True)
+class SearchCacheKey:
+    keyword: str
+    limit: int
+
 
 size = get_config().cache_size
 timeout = get_config().cache_timeout
@@ -43,6 +48,7 @@ audio_timeout = get_config().audio_cache_timeout
 audio_cache = TTLCache[AudioCacheKey, AudioInfo](maxsize=size, ttl=audio_timeout)
 song_cache = TTLCache[int, SongInfo](maxsize=size, ttl=timeout)
 lyric_cache = TTLCache[int, LyricData](maxsize=size, ttl=timeout)
+search_cache = TTLCache[SearchCacheKey, list[SongInfo]](maxsize=size, ttl=timeout)
 playlist_cache = TTLCache[int, Playlist](maxsize=size, ttl=timeout)
 album_cache = TTLCache[int, Album](maxsize=size, ttl=timeout)
 
@@ -130,6 +136,19 @@ async def get_lyric(id: int) -> LyricData:
     if not get_config().api_cache:
         return await song.get_lyric(id)
     return data if (data := lyric_cache.get(id)) else await song.get_lyric(id)
+
+
+async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
+    if not get_config().api_cache:
+        return await song.search(keyword , limit)
+    
+    key = SearchCacheKey(keyword, limit)
+    if data := search_cache.get(key):
+        return data
+    else:
+        result = await song.search(keyword , limit)
+        search_cache[key] = result
+        return result
 
 
 async def get_playlist(id: int) -> Optional[Playlist]:
