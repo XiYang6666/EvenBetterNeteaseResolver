@@ -196,10 +196,10 @@ meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-a
 
 请求参数:
 
-| 参数      | 必填 | GET | POST | 类型   | 注释     |
-| --------- | ---- | --- | ---- | ------ | -------- |
-| `keyword` | ✅   | ✅  | ✅   | string | 关键词   |
-| `limit`   | ❌   | ✅  | ✅   | number | 搜索条数 |
+| 参数      | 必填       | GET | POST | 类型   | 注释     |
+| --------- | ---------- | --- | ---- | ------ | -------- |
+| `keyword` | ✅         | ✅  | ✅   | string | 关键词   |
+| `limit`   | ❌(默认10) | ✅  | ✅   | number | 搜索条数 |
 
 ## 已知问题
 
