@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: export-requirements
+        name: Export requirements.txt from pyproject.toml
+        language: system
+        entry: python scripts/export_requirements.py
+        files: pyproject.toml
+        pass_filenames: false
+        
