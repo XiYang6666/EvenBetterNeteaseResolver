@@ -3,7 +3,7 @@ import subprocess
 
 
 def main():
-    subprocess.run(["pdm", "export", "-o", "requirements.txt"])
+    subprocess.run(["pdm", "export", "--no-hashes", "-o", "requirements.txt"])
     subprocess.run(["git", "add", "requirements.txt"])
 
 
