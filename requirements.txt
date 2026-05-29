@@ -19,7 +19,7 @@ httpx[http2]==0.28.1
 hyperframe==6.1.0
 idna==3.10
 iniconfig==2.1.0
-packaging==25.0
+packaging==26.2
 pluggy==1.6.0
 pycparser==2.22; implementation_name != "PyPy" and platform_python_implementation != "PyPy"
 pydantic==2.11.7
