@@ -17,7 +17,7 @@ hpack==4.1.0
 httpcore==1.0.9
 httpx[http2]==0.28.1
 hyperframe==6.1.0
-idna==3.10
+idna==3.17
 iniconfig==2.1.0
 packaging==25.0
 pluggy==1.6.0
