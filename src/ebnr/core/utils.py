@@ -1,10 +1,7 @@
-import asyncio
 import re
 import urllib.parse
-from asyncio import Semaphore
 from dataclasses import dataclass
 from datetime import datetime
-from functools import wraps
 from typing import Iterable, Literal, Optional, Protocol
 
 import httpx
