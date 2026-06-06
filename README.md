@@ -45,17 +45,17 @@ services:
 
 配置文件在项目根目录下的 `config.toml` 中, 可以使用环境变量覆盖配置.
 
-| 配置项                           | 默认值                | 注释                                                                     |
-| -------------------------------- | --------------------- | ------------------------------------------------------------------------ |
-| EBNR_BASE_URL                    | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值                               |
-| EBNR_API_CACHE                   | true                  | 是否缓存上游网易云 API 返回值                                            |
-| EBNR_CACHE_SIZE                  | 1024                  | 上游 API 数据缓存量                                                      |
-| EBNR_CACHE_TIMEOUT               | 86400                 | 上游 API 数据缓存时长                                                    |
-| EBNR_AUDIO_CACHE_TIMEOUT         | 3600                  | 音频链接缓存时长, 为 0 则不缓存                                          |
-| EBNR_AUDIO_CACHE_VALIDATION_TYPE | optimistic            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效                   |
-| EBNR_RESOLVE_RESPONSE_TYPE       | redirect              | 音频解析返回类型, 可选 redirect, proxy, streaming-proxy                  |
-| EBNR_REDIRECT_CODE               | 307                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 307 和 302 |
-| EBNR_API_CONCURRENCY             | 200                   | 上游 API 请求最大并发量                                                  |
+| 配置项                           | 默认值                | 注释                                                                            |
+| -------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| EBNR_BASE_URL                    | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值                                      |
+| EBNR_API_CACHE                   | true                  | 是否缓存上游网易云 API 返回值                                                   |
+| EBNR_CACHE_SIZE                  | 1024                  | 上游 API 数据缓存量                                                             |
+| EBNR_CACHE_TIMEOUT               | 86400                 | 上游 API 数据缓存时长                                                           |
+| EBNR_AUDIO_CACHE_TIMEOUT         | 3600                  | 音频链接缓存时长, 为 0 则不缓存                                                 |
+| EBNR_AUDIO_CACHE_VALIDATION_TYPE | background            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效, 可选 sync 和 background |
+| EBNR_RESOLVE_RESPONSE_TYPE       | redirect              | 音频解析返回类型, 可选 redirect, proxy, streaming-proxy                         |
+| EBNR_REDIRECT_CODE               | 307                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 307 和 302        |
+| EBNR_API_CONCURRENCY             | 200                   | 上游 API 请求最大并发量                                                         |
 
 ## 请求格式
 
