@@ -15,7 +15,8 @@ from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
 from ebnr.router.search import router as search_router
 from ebnr.router.tracks import router as tracks_router
-from ebnr.utils import is_vip, parse_netease_link
+from ebnr.services.cached_api import is_vip
+from ebnr.utils import parse_netease_link
 
 COOKIE_PATH = Path("data/cookie.json")
 
