@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import Optional
 
 import httpx
 from cachetools import TTLCache
