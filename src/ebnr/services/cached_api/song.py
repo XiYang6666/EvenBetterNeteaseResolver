@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, cast
 
 import httpx
 from cachetools import TTLCache
@@ -81,32 +81,24 @@ async def get_audio(
     async def verify_cache(song_id: int):
         key = AudioCacheKey(song_id, quality, encoding)
         data = audio_cache.get(key)
+        if not (data and data.url):
+            return AudioInactive(song_id)
         if (
-            get_config().audio_cache_validation_type == "pessimistic"
-            and data
-            and data.url
-            and not await verify_url(data.url)
+            get_config().audio_cache_validation_type == "sync"
+            and not await verify_url(data.url)  # type: ignore
         ):
-            # 悲观缓存且校验失效
+            # 同步缓存且校验失效
             audio_cache.pop(key)
             return AudioInactive(song_id)
-        elif (
-            get_config().audio_cache_validation_type == "pessimistic"
-            and data
-            and data.url
-        ):
-            # 悲观缓存且校验成功
+        elif get_config().audio_cache_validation_type == "sync":
+            # 同步缓存且校验成功
             return data
-        elif (
-            get_config().audio_cache_validation_type == "optimistic"
-            and data
-            and data.url
-        ):
-            # 乐观缓存
-            asyncio.create_task(background_verify_url(data.url, key))
+        elif get_config().audio_cache_validation_type == "background":
+            # 异步缓存
+            asyncio.create_task(background_verify_url(data.url, key))  # type: ignore
             return data
         else:
-            return AudioInactive(song_id)
+            assert False
 
     verify_cache_tasks = [verify_cache(song_id) for song_id in ids]
     read_cache_result: list[AudioInfo | AudioInactive] = await asyncio.gather(
