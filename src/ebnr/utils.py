@@ -1,19 +1,19 @@
 import re
 import urllib.parse
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Callable, Literal, Optional, TypeGuard
 
 import httpx
 from cachetools import TTLCache
 
 from ebnr.core.api import raw
 
-is_vip_cache = TTLCache(maxsize=1, ttl=60 * 60 * 24)
+is_vip_cache = TTLCache[str, bool](maxsize=1, ttl=60 * 60 * 24)
 
 
 async def is_vip() -> bool:
-    if is_vip_cache.get("is_vip") is not None:
-        return is_vip_cache["is_vip"]
+    if (value := is_vip_cache.get("is_vip")) is not None:
+        return value
     try:
         data = await raw.user.get_user_info()
     except httpx.RequestError:
@@ -96,3 +96,27 @@ async def streaming_request(method: str, url: str, chunk_size: int = 1024):
         await async_client.aclose()
 
     return response, data_generator()
+
+
+def maybe_apply[T, R](value: Optional[T], func: Callable[[T], R]) -> Optional[R]:
+    if value is None:
+        return None
+    return func(value)
+
+
+def validate_with_fallback[T, S](
+    value: T, rule: Callable[[T], TypeGuard[S]], fallback: S
+) -> S:
+    if rule(value):
+        return value
+    return fallback
+
+
+def first_not_none[T](
+    *getters: *tuple[*tuple[Callable[[], Optional[T]], ...], Callable[[], T]],
+) -> T:
+    for getter in getters:
+        if (value := getter()) is not None:
+            return value
+    else:
+        assert False

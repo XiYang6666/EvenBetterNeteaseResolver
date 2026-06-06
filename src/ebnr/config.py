@@ -2,7 +2,13 @@ import os
 import tomllib
 from asyncio import Semaphore
 from dataclasses import dataclass
-from typing import Literal
+from typing import Callable, Literal, TypeGuard, cast
+
+from ebnr.utils import first_not_none, maybe_apply, validate_with_fallback
+
+type AudioCacheValidationTypeType = Literal["sync", "background"]
+type ResolveResponseTypeType = Literal["redirect", "proxy", "streaming-proxy"]
+type RedirectCodeType = Literal[302, 307]
 
 
 @dataclass
@@ -12,8 +18,8 @@ class Config:
     cache_size: int
     cache_timeout: int
     audio_cache_timeout: int
-    audio_cache_type: Literal["optimistic", "pessimistic"]
-    resolve_type: Literal["redirect", "proxy", "streaming-proxy"]
+    audio_cache_validation_type: AudioCacheValidationTypeType
+    resolve_response_type: ResolveResponseTypeType
     redirect_code: Literal[302, 307]
     api_semaphore: Semaphore
 
@@ -24,8 +30,8 @@ config = Config(
     cache_size=1024,
     cache_timeout=86400,
     audio_cache_timeout=3600,
-    audio_cache_type="optimistic",
-    resolve_type="redirect",
+    audio_cache_validation_type="background",
+    resolve_response_type="redirect",
     redirect_code=307,
     api_semaphore=Semaphore(200),
 )
@@ -36,46 +42,70 @@ def load_config():
     with open("config.toml", "rb") as f:
         config_file = tomllib.load(f)
 
-    base_url = os.environ.get("EBNR_BASE_URL", config_file["base_url"])
-    api_cache = (
-        str(os.environ.get("EBNR_API_CACHE", config_file["api_cache"])).lower()
-        == "true"
+    base_url = (
+        os.environ.get("EBNR_BASE_URL")
+        or cast(str, config_file["base_url"])
+        or "http://127.0.0.1:8000"
     )
-    cache_size = int(os.environ.get("EBNR_CACHE_SIZE", config_file["cache_size"]))
-    cache_timeout = int(
-        os.environ.get("EBNR_CACHE_TIMEOUT", config_file["cache_timeout"])
+    api_cache = first_not_none(
+        lambda: maybe_apply(
+            os.environ.get("EBNR_API_CACHE"), lambda x: x.lower() == "true"
+        ),
+        lambda: cast(bool, config_file["api_cache"]),
+        lambda: True,
     )
-    audio_cache_timeout = int(
-        os.environ.get("EBNR_AUDIO_CACHE_TIMEOUT", config_file["audio_cache_timeout"])
+    cache_size = (
+        maybe_apply(os.environ.get("EBNR_CACHE_SIZE"), int)
+        or cast(int, config_file["cache_size"])
+        or 1024
     )
-    audio_cache_type = (
-        val
-        if (
-            val := os.environ.get(
-                "EBNR_AUDIO_CACHE_TYPE", config_file["audio_cache_type"]
-            )
+    cache_timeout = (
+        maybe_apply(os.environ.get("EBNR_CACHE_TIMEOUT"), int)
+        or cast(int, config_file["cache_timeout"])
+        or 86400
+    )
+    audio_cache_timeout = (
+        maybe_apply(os.environ.get("EBNR_AUDIO_CACHE_TIMEOUT"), int)
+        or cast(int, config_file["audio_cache_timeout"])
+        or 3600
+    )
+    audio_cache_validation_type: AudioCacheValidationTypeType = validate_with_fallback(
+        os.environ.get("EBNR_AUDIO_CACHE_VALIDATION_TYPE")
+        or cast(
+            AudioCacheValidationTypeType,
+            config_file["audio_cache_validation_type"],
         )
-        in ("optimistic", "pessimistic")
-        else "pessimistic"
+        or "background",
+        cast(
+            Callable[[str], TypeGuard[AudioCacheValidationTypeType]],
+            lambda x: x in ("sync", "background"),
+        ),
+        "background",
     )
-    resolve_type = (
-        val
-        if (val := os.environ.get("EBNR_RESOLVE_TYPE", config_file["resolve_type"]))
-        in ("redirect", "proxy", "streaming-proxy")
-        else "redirect"
-    )
-    redirect_code = (
-        val
-        if (
-            val := int(
-                os.environ.get("EBNR_REDIRECT_CODE", config_file["redirect_code"])
-            )
+    resolve_response_type: ResolveResponseTypeType = validate_with_fallback(
+        os.environ.get("EBNR_RESOLVE_RESPONSE_TYPE")
+        or cast(
+            ResolveResponseTypeType,
+            config_file["resolve_response_type"],
         )
-        in (302, 307)
-        else 307
+        or "redirect",
+        cast(
+            Callable[[str], TypeGuard[ResolveResponseTypeType]],
+            lambda x: x in ("redirect", "proxy", "streaming-proxy"),
+        ),
+        "redirect",
     )
-    api_concurrency = int(
-        os.environ.get("EBNR_API_CONCURRENCY", config_file["api_concurrency"])
+    redirect_code: RedirectCodeType = validate_with_fallback(
+        maybe_apply(os.environ.get("EBNR_REDIRECT_CODE"), int)
+        or cast(int, config_file["redirect_code"])
+        or 307,
+        cast(Callable[[int], TypeGuard[RedirectCodeType]], lambda x: x in (302, 307)),
+        307,
+    )
+    api_concurrency = (
+        maybe_apply(os.environ.get("EBNR_API_CONCURRENCY"), int)
+        or cast(int, config_file["api_concurrency"])
+        or 200
     )
 
     config = Config(
@@ -84,8 +114,8 @@ def load_config():
         cache_size=cache_size,
         cache_timeout=cache_timeout,
         audio_cache_timeout=audio_cache_timeout,
-        audio_cache_type=audio_cache_type,
-        resolve_type=resolve_type,
+        audio_cache_validation_type=audio_cache_validation_type,
+        resolve_response_type=resolve_response_type,
         redirect_code=redirect_code,
         api_semaphore=Semaphore(api_concurrency),
     )

@@ -28,9 +28,9 @@ async def resolve_link(link: str, id: Optional[int] = None):
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")
     
-    if get_config().resolve_type == "redirect":
+    if get_config().resolve_response_type == "redirect":
         return RedirectResponse(data[0].url, get_config().redirect_code)
-    elif get_config().resolve_type == "proxy":
+    elif get_config().resolve_response_type == "proxy":
         async with httpx.AsyncClient() as client:
             response = await client.get(data[0].url)
             body = response.content
@@ -43,7 +43,7 @@ async def resolve_link(link: str, id: Optional[int] = None):
                 if k.lower() not in ["content-encoding", "transfer-encoding"]
             },
         )
-    elif get_config().resolve_type == "streaming-proxy":
+    elif get_config().resolve_response_type == "streaming-proxy":
         response, generator = await streaming_request("GET", data[0].url)
         return StreamingResponse(
             generator,

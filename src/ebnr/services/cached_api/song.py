@@ -69,18 +69,30 @@ async def get_audio(
         response = await client.get(url)
         return response.status_code == 200
 
+    async def background_verify_url(url: str, key: AudioCacheKey):
+
+        if await verify_url(url):
+            return
+        audio_cache.pop(key)
+
     async def verify_cache(song_id: int):
         key = AudioCacheKey(song_id, quality, encoding)
-        data = audio_cache.get(AudioCacheKey(song_id, quality, encoding))
+        data = audio_cache.get(key)
         if (
-            get_config().audio_cache_type == "pessimistic"
+            get_config().audio_cache_validation_type == "pessimistic"
             and data
             and data.url
             and not await verify_url(data.url)
-        ):  # 悲观缓存且校验失效
+        ):
+            # 悲观缓存且校验失效
             audio_cache.pop(key)
             return AudioInactive(song_id)
-        elif data:
+        elif get_config().audio_cache_validation_type == "pessimistic" and data and data.url:
+            # 悲观缓存且校验成功
+            return data
+        elif get_config().audio_cache_validation_type == "optimistic" and data and data.url:
+            # 乐观缓存
+            asyncio.create_task(background_verify_url(data.url, key))
             return data
         else:
             return AudioInactive(song_id)
