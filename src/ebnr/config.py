@@ -1,6 +1,5 @@
 import os
 import tomllib
-from asyncio import Semaphore
 from dataclasses import dataclass
 from typing import Callable, Literal, TypeGuard, cast
 
@@ -21,7 +20,7 @@ class Config:
     audio_cache_validation_type: AudioCacheValidationTypeType
     resolve_response_type: ResolveResponseTypeType
     redirect_code: Literal[302, 307]
-    api_semaphore: Semaphore
+    api_concurrency: int
 
 
 config = Config(
@@ -33,7 +32,7 @@ config = Config(
     audio_cache_validation_type="background",
     resolve_response_type="redirect",
     redirect_code=307,
-    api_semaphore=Semaphore(200),
+    api_concurrency=200,
 )
 
 
@@ -117,7 +116,7 @@ def load_config():
         audio_cache_validation_type=audio_cache_validation_type,
         resolve_response_type=resolve_response_type,
         redirect_code=redirect_code,
-        api_semaphore=Semaphore(api_concurrency),
+        api_concurrency=(api_concurrency),
     )
 
 

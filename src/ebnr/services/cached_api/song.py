@@ -17,6 +17,7 @@ from ebnr.core.types import (
     SongInfo,
 )
 from ebnr.core.utils import extract_playlist_tracks, with_semaphore
+from ebnr.services.cached_api.semaphore import get_api_semaphore
 
 
 @dataclass(frozen=True)
@@ -64,7 +65,7 @@ async def get_audio(
 
     client = httpx.AsyncClient()
 
-    @with_semaphore(get_config().api_semaphore)
+    @with_semaphore(get_api_semaphore())
     async def verify_url(url: str):
         response = await client.get(url)
         return response.status_code == 200
@@ -87,10 +88,18 @@ async def get_audio(
             # 悲观缓存且校验失效
             audio_cache.pop(key)
             return AudioInactive(song_id)
-        elif get_config().audio_cache_validation_type == "pessimistic" and data and data.url:
+        elif (
+            get_config().audio_cache_validation_type == "pessimistic"
+            and data
+            and data.url
+        ):
             # 悲观缓存且校验成功
             return data
-        elif get_config().audio_cache_validation_type == "optimistic" and data and data.url:
+        elif (
+            get_config().audio_cache_validation_type == "optimistic"
+            and data
+            and data.url
+        ):
             # 乐观缓存
             asyncio.create_task(background_verify_url(data.url, key))
             return data

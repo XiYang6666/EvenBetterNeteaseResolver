@@ -5,7 +5,7 @@ from typing import Literal, Mapping, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 
-from ebnr.config import load_config
+from ebnr.config import get_config, load_config
 from ebnr.core.cookie import load_cookies
 from ebnr.router.album import router as album_router
 from ebnr.router.audio import router as audio_router
@@ -36,8 +36,12 @@ app = FastAPI(lifespan=lifespan, title="Even Better Netease Resolver (EBNR)")
 
 @app.get("/")
 async def root():
-    """显示欢迎信息与 VIP 状态"""
-    return {"message": "EBNR API Running!", "is_vip": await is_vip()}
+    """显示欢迎信息与状态"""
+    return {
+        "message": "EBNR API Running!",
+        "is_vip": await is_vip(),
+        "config": get_config(),
+    }
 
 
 app.include_router(info_router)
