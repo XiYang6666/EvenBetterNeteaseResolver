@@ -1,4 +1,5 @@
 import asyncio
+import ssl
 from dataclasses import dataclass
 from typing import Optional
 
@@ -55,6 +56,8 @@ search_cache = TTLCache[SearchCacheKey, list[SongInfo]](maxsize=size, ttl=timeou
 playlist_cache = TTLCache[int, Playlist](maxsize=size, ttl=timeout)
 album_cache = TTLCache[int, Album](maxsize=size, ttl=timeout)
 
+ssl_context = ssl.create_default_context()
+
 
 async def get_audio(
     ids: list[int],
@@ -66,7 +69,7 @@ async def get_audio(
             song.get_audio(ids, quality, encoding), get_semaphore()
         )
 
-    client = httpx.AsyncClient()
+    client = httpx.AsyncClient(verify=ssl_context)
 
     @with_semaphore(get_semaphore())
     async def verify_url(url: str):

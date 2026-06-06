@@ -1,4 +1,5 @@
 import re
+import ssl
 import urllib.parse
 from dataclasses import dataclass
 from datetime import datetime
@@ -17,9 +18,12 @@ COOKIES = {
 
 type DeviceType = Literal["pc", "mobile", "linux"]
 
+ssl_context = ssl.create_default_context()
+
 
 def make_client(*, with_cookie: bool = True, device_type: DeviceType = "pc"):
     return httpx.AsyncClient(
+        verify=ssl_context,
         headers={
             "User-Agent": COOKIES[device_type],
             "Referer": "https://music.163.com",
