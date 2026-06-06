@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, HTTPException
 from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import Album
-from ebnr.services.cached_api.song import get_album
+from ebnr.services.wrapped_api.song import get_album
 from ebnr.utils import parse_netease_link
 
 router = APIRouter(prefix="/album", tags=["专辑"])

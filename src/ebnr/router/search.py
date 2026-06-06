@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from fastapi import APIRouter, Body
 
 from ebnr.core.types import SongInfo
-from ebnr.services.cached_api.song import search
+from ebnr.services.wrapped_api.song import search
 
 router = APIRouter(prefix="/search", tags=["搜索"])
 

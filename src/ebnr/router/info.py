@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import SongInfo
-from ebnr.services.cached_api.song import get_song_info
+from ebnr.services.wrapped_api.song import get_song_info
 from ebnr.utils import NeteaseLinkInfo, parse_netease_link
 
 router = APIRouter(prefix="/info", tags=["歌曲信息"])

@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import RedirectResponse, StreamingResponse
 
 from ebnr.config import get_config
-from ebnr.services.cached_api.song import get_audio
+from ebnr.services.wrapped_api.song import get_audio
 from ebnr.utils import parse_netease_link, streaming_request
 
 router = APIRouter(prefix="/resolve", tags=["音频解析"])

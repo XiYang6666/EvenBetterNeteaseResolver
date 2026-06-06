@@ -17,7 +17,7 @@ from ebnr.core.types import (
     SongInfo,
 )
 from ebnr.core.utils import extract_playlist_tracks
-from ebnr.services.cached_api.semaphore import get_semaphore
+from ebnr.services.wrapped_api.semaphore import get_semaphore
 from ebnr.utils import run_with_semaphore, with_semaphore
 
 

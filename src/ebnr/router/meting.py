@@ -7,7 +7,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from ebnr.config import get_config
 from ebnr.core.types import SongInfo
-from ebnr.services.cached_api.song import (
+from ebnr.services.wrapped_api.song import (
     get_audio,
     get_lyric,
     get_playlist,

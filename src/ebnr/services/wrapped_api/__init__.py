@@ -2,7 +2,7 @@ import httpx
 from cachetools import TTLCache
 
 from ebnr.core.api import raw
-from ebnr.services.cached_api.semaphore import get_semaphore
+from ebnr.services.wrapped_api.semaphore import get_semaphore
 from ebnr.utils import run_with_semaphore
 
 from . import song
