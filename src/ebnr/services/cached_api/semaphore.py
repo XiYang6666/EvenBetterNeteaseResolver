@@ -6,7 +6,7 @@ from ebnr.config import get_config
 api_semaphore: Optional[Semaphore] = None
 
 
-def get_api_semaphore():
+def get_semaphore():
     global api_semaphore
     if not api_semaphore:
         api_semaphore = Semaphore(get_config().api_concurrency)

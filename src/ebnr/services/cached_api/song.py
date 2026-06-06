@@ -16,8 +16,9 @@ from ebnr.core.types import (
     Quality,
     SongInfo,
 )
-from ebnr.core.utils import extract_playlist_tracks, with_semaphore
-from ebnr.services.cached_api.semaphore import get_api_semaphore
+from ebnr.core.utils import extract_playlist_tracks
+from ebnr.services.cached_api.semaphore import get_semaphore
+from ebnr.utils import run_with_semaphore, with_semaphore
 
 
 @dataclass(frozen=True)
@@ -61,17 +62,18 @@ async def get_audio(
     encoding: Encoding = Encoding.FLAC,
 ) -> list[AudioInfo | None]:
     if get_config().audio_cache_timeout == 0 or not get_config().api_cache:
-        return await song.get_audio(ids, quality, encoding)
+        return await run_with_semaphore(
+            song.get_audio(ids, quality, encoding), get_semaphore()
+        )
 
     client = httpx.AsyncClient()
 
-    @with_semaphore(get_api_semaphore())
+    @with_semaphore(get_semaphore())
     async def verify_url(url: str):
         response = await client.get(url)
         return response.status_code == 200
 
     async def background_verify_url(url: str, key: AudioCacheKey):
-
         if await verify_url(url):
             return
         audio_cache.pop(key)
@@ -131,7 +133,7 @@ async def get_audio(
 
 async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
     if not get_config().api_cache:
-        return await song.get_song_info(ids)
+        return await run_with_semaphore(song.get_song_info(ids), get_semaphore())
 
     read_cache_result = []
     for song_id in ids:
@@ -156,7 +158,7 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
 
 async def get_lyric(id: int) -> LyricData:
     if not get_config().api_cache:
-        return await song.get_lyric(id)
+        return await run_with_semaphore(song.get_lyric(id), get_semaphore())
     return data if (data := lyric_cache.get(id)) else await song.get_lyric(id)
 
 
@@ -175,7 +177,7 @@ async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
 
 async def get_playlist(id: int) -> Optional[Playlist]:
     if not get_config().api_cache:
-        return await song.get_playlist(id)
+        return await run_with_semaphore(song.get_playlist(id), get_semaphore())
     return data if (data := playlist_cache.get(id)) else await song.get_playlist(id)
 
 
@@ -183,7 +185,9 @@ async def get_tracks(
     id: int, limit: int = 1000, page: int = 0
 ) -> Optional[list[SongInfo | None]]:
     if not get_config().api_cache:
-        return await song.get_tracks(id, limit, page)
+        return await run_with_semaphore(
+            song.get_tracks(id, limit, page), get_semaphore()
+        )
 
     data = playlist_cache.get(id) or await song.get_playlist(id)
     if data is None:
@@ -195,5 +199,5 @@ async def get_tracks(
 
 async def get_album(id: int) -> Optional[Album]:
     if not get_config().api_cache:
-        return await song.get_album(id)
+        return await run_with_semaphore(song.get_album(id), get_semaphore())
     return data if (data := album_cache.get(id)) else await song.get_album(id)

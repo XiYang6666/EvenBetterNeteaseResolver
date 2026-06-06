@@ -1,15 +1,13 @@
 import json
 from typing import Optional
 
-from ebnr.config import get_config
 from ebnr.core.cryto.eapi import make_eapi_form, make_eapi_header
 from ebnr.core.cryto.weapi import make_weapi_form
 from ebnr.core.excaptions import NeteaseApiException
 from ebnr.core.types import Encoding, Quality
-from ebnr.core.utils import make_client, with_semaphore
+from ebnr.core.utils import make_client
 
 
-@with_semaphore(get_config().api_concurrency)
 async def get_audio(
     ids: list[int],
     quality: Quality = Quality.STANDARD,
@@ -38,7 +36,6 @@ async def get_audio(
     return result
 
 
-@with_semaphore(get_config().api_concurrency)
 async def get_song_info(ids: list[int]) -> dict:
     request_url = "https://music.163.com/weapi/v3/song/detail"
     form = make_weapi_form(
@@ -58,7 +55,6 @@ async def get_song_info(ids: list[int]) -> dict:
     return result
 
 
-@with_semaphore(get_config().api_concurrency)
 async def get_lyric(id: int) -> dict:
     request_url = "https://interface3.music.163.com/api/song/lyric"
     async with make_client() as client:
@@ -86,7 +82,6 @@ async def get_lyric(id: int) -> dict:
     return result
 
 
-@with_semaphore(get_config().api_concurrency)
 async def search(keyword: str, limit: int = 10) -> dict:
     request_url = "https://music.163.com/api/cloudsearch/pc"
     async with make_client() as client:
@@ -104,7 +99,6 @@ async def search(keyword: str, limit: int = 10) -> dict:
     return result
 
 
-@with_semaphore(get_config().api_concurrency)
 async def get_playlist(id: int) -> Optional[dict]:
     request_url = "https://music.163.com/api/v6/playlist/detail"
     async with make_client() as client:
@@ -124,7 +118,6 @@ async def get_playlist(id: int) -> Optional[dict]:
     return result
 
 
-@with_semaphore(get_config().api_concurrency)
 async def get_album(id: int) -> Optional[dict]:
     request_url = f"https://music.163.com/api/v1/album/{id}"
     async with make_client() as client:

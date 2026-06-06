@@ -66,24 +66,6 @@ def remap_result[T: HaveId](ids: list[int], list: Iterable[T]) -> list[Optional[
     return [id_map.get(i) for i in ids]
 
 
-def with_semaphore(sem: Semaphore):
-    def decorator(func):
-        if not asyncio.iscoroutinefunction(func):
-            raise TypeError("with_semaphore_async can only decorate async functions")
-
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            await sem.acquire()
-            try:
-                return await func(*args, **kwargs)
-            finally:
-                sem.release()
-
-        return wrapper
-
-    return decorator
-
-
 @dataclass
 class ExtractedTracks:
     known: list[SongInfo]
