@@ -51,11 +51,19 @@ services:
 | EBNR_API_CACHE                   | true                  | 是否缓存上游网易云 API 返回值                                                   |
 | EBNR_CACHE_SIZE                  | 1024                  | 上游 API 数据缓存量                                                             |
 | EBNR_CACHE_TIMEOUT               | 86400                 | 上游 API 数据缓存时长                                                           |
+| EBNR_CACHE_BACKEND               | memory                | 缓存后端                                                                        |
 | EBNR_AUDIO_CACHE_TIMEOUT         | 3600                  | 音频链接缓存时长, 为 0 则不缓存                                                 |
 | EBNR_AUDIO_CACHE_VALIDATION_TYPE | background            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效, 可选 sync 和 background |
 | EBNR_RESOLVE_RESPONSE_TYPE       | redirect              | 音频解析返回类型, 可选 redirect, proxy, streaming-proxy                         |
 | EBNR_REDIRECT_CODE               | 307                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 307 和 302        |
 | EBNR_API_CONCURRENCY             | 200                   | 上游 API 请求最大并发量                                                         |
+| EBNR_REDIS_HOST                  | localhost             | Redis 服务 host                                                                 |
+| EBNR_REDIS_PORT                  | 6379                  | Redis 服务端口                                                                  |
+| EBNR_REDIS_DB                    | 0                     | Redis 数据库编号                                                                |
+| EBNR_REDIS_USERNAME              | None                  | Redis 用户名                                                                    |
+| EBNR_REDIS_PASSWORD              | None                  | Redis 密码                                                                      |
+| EBNR_REDIS_PREFIX                | ebnr                  | Redis 缓存键前缀                                                                |
+| EBNR_REDIS_MAX_CONNECTIONS       | 50                    | Redis 最大连接数                                                                |
 
 ## 请求格式
 
