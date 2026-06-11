@@ -11,28 +11,20 @@ class RedisCache[K, V](BaseCache[K, V]):
 
     def __init__(
         self,
-        maxsize: int,
         ttl: float,
         client: Redis,
         prefix: str,
         serializer: Callable[[K], str],
     ):
-        if maxsize <= 0:
-            raise ValueError("maxsize must be positive")
         if ttl < 0:
             raise ValueError("ttl must be non-negative")
         if client.get_connection_kwargs().get("decode_responses", False):
             raise ValueError(RedisCache.REDIS_RAW_MODE_ERROR_MSG)
 
-        self._maxsize = maxsize
         self._ttl = ttl
         self._client = client
         self._prefix = prefix
         self._serializer = serializer
-
-    @property
-    def maxsize(self) -> int:
-        return self._maxsize
 
     @property
     def ttl(self) -> float:

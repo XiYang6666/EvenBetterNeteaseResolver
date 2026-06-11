@@ -5,10 +5,6 @@ from typing import Optional, overload
 class BaseCache[K, V](ABC):
     @property
     @abstractmethod
-    def maxsize(self) -> int: ...
-
-    @property
-    @abstractmethod
     def ttl(self) -> float: ...
 
     @overload

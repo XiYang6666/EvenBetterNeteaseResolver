@@ -74,7 +74,6 @@ def make_cache[K, V](maxsize: int, ttl: float) -> BaseCache[K, V]:  # pyright: i
         return MemoryCache(maxsize, ttl)
     elif cache_backend == "redis":
         return RedisCache(
-            maxsize,
             ttl,
             get_redis_client(),
             get_config().redis.prefix,
