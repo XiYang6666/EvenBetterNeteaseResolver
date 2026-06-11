@@ -15,7 +15,7 @@ class RedisConfig(BaseModel):
     db: int = Field(default=0, ge=0, le=15)
     username: Optional[str] = None
     password: Optional[str] = None
-    prefix: str = "ebnr"
+    prefix: str = "ebnr:"
     max_connections: int = 50
 
 
@@ -45,11 +45,15 @@ class Config(BaseSettings):
 
     base_url: str = "http://127.0.0.1:8000"
     api_cache: bool = True
+
     cache_size: int = 1024
     cache_timeout: int = 86400
     cache_backend: Literal["memory", "redis"] = "memory"
+    cache_fallback: bool = False
+
     audio_cache_timeout: int = 3600
     audio_cache_validation_type: Literal["sync", "background"] = "background"
+
     resolve_response_type: Literal["redirect", "proxy", "streaming-proxy"] = "redirect"
     redirect_code: Literal[302, 307] = 307
     api_concurrency: int = 200

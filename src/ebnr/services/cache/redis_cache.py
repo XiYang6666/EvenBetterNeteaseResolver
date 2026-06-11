@@ -31,7 +31,7 @@ class RedisCache[K, V](BaseCache[K, V]):
         return self._ttl
 
     def _make_key(self, key: K) -> str:
-        return f"{self._prefix}:{self._serializer(key)}"
+        return f"{self._prefix}{self._serializer(key)}"
 
     def _resolve_ttl(self, ttl: float | None) -> float:
         return self._ttl if ttl is None else ttl

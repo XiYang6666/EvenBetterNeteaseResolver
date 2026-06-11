@@ -24,6 +24,16 @@ def init_redis_client():
     )
 
 
+def get_redis_client():
+    assert redis_client
+    return redis_client
+
+
+async def check_redis_client():
+    client = await get_redis_client()
+    await client.ping()
+
+
 def load_cache():
     if get_config().cache_backend != "redis":
         return
@@ -34,11 +44,6 @@ async def stop_cache():
     if get_config().cache_backend != "redis":
         return
     await get_redis_client().close()
-
-
-def get_redis_client():
-    assert redis_client
-    return redis_client
 
 
 BaseTypes: TypeAlias = str | int | bool
