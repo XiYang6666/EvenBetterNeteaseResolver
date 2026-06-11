@@ -95,7 +95,7 @@ async def get_audio(
             return
         await audio_cache.delete(key)
 
-    async def verify_cache(song_id: int):
+    async def get_from_cache(song_id: int):
         key = AudioCacheKey(song_id, quality, encoding)
         data = await audio_cache.get(key)
         if not (data and data.url):
@@ -117,10 +117,8 @@ async def get_audio(
         else:
             assert False
 
-    verify_cache_tasks = [verify_cache(song_id) for song_id in ids]
-    read_cache_result: list[AudioInfo | AudioInactive] = await asyncio.gather(
-        *verify_cache_tasks
-    )
+    read_cache_tasks = [get_from_cache(song_id) for song_id in ids]
+    read_cache_result = await asyncio.gather(*read_cache_tasks)
     await client.aclose()
 
     inactive_ids = [x.id for x in read_cache_result if isinstance(x, AudioInactive)]
@@ -144,12 +142,11 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
     if not get_config().api_cache:
         return await run_with_semaphore(song.get_song_info(ids), get_semaphore())
 
-    read_cache_result = []
-    for song_id in ids:
-        if data := await song_cache.get(song_id):
-            read_cache_result.append(data)
-        else:
-            read_cache_result.append(SongInactive(song_id))
+    async def get_from_cache(song_id: int):
+        return await song_cache.get(song_id) or SongInactive(song_id)
+
+    read_cache_tasks = [get_from_cache(song_id) for song_id in ids]
+    read_cache_result = await asyncio.gather(*read_cache_tasks)
 
     inactive_ids = [x.id for x in read_cache_result if isinstance(x, SongInactive)]
     inactive_map = dict(zip(inactive_ids, await song.get_song_info(inactive_ids)))
