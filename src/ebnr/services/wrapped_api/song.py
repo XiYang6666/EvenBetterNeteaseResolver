@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 import httpx
-from cachetools import Cache, TTLCache
 from lazy_object_proxy import Proxy
 
 from ebnr.config import get_config
@@ -19,6 +18,8 @@ from ebnr.core.types import (
     SongInfo,
 )
 from ebnr.core.utils import extract_playlist_tracks
+from ebnr.services.cache import make_cache
+from ebnr.services.cache.base_cache import BaseCache
 from ebnr.services.wrapped_api.semaphore import get_semaphore
 from ebnr.utils import run_with_semaphore, with_semaphore
 
@@ -52,23 +53,23 @@ size: int = Proxy(lambda: get_config().cache_size)
 timeout: int = Proxy(lambda: get_config().cache_timeout)
 audio_timeout: int = Proxy(lambda: get_config().audio_cache_timeout)
 
-audio_cache: Cache[AudioCacheKey, AudioInfo] = Proxy(
-    lambda: TTLCache(maxsize=size, ttl=audio_timeout),
+audio_cache: BaseCache[AudioCacheKey, AudioInfo] = Proxy(
+    lambda: make_cache(maxsize=size, ttl=audio_timeout)
 )
-song_cache: Cache[int, SongInfo] = Proxy(
-    lambda: TTLCache(maxsize=size, ttl=timeout),
+song_cache: BaseCache[int, SongInfo] = Proxy(
+    lambda: make_cache(maxsize=size, ttl=timeout)
 )
-lyric_cache: Cache[int, LyricData] = Proxy(
-    lambda: TTLCache(maxsize=size, ttl=timeout),
+lyric_cache: BaseCache[int, LyricData] = Proxy(
+    lambda: make_cache(maxsize=size, ttl=timeout)
 )
-search_cache: Cache[SearchCacheKey, list[SongInfo]] = Proxy(
-    lambda: TTLCache(maxsize=size, ttl=timeout)
+search_cache: BaseCache[SearchCacheKey, list[SongInfo]] = Proxy(
+    lambda: make_cache(maxsize=size, ttl=timeout)
 )
-playlist_cache: Cache[int, Playlist] = Proxy(
-    lambda: TTLCache(maxsize=size, ttl=timeout)
+playlist_cache: BaseCache[int, Playlist] = Proxy(
+    lambda: make_cache(maxsize=size, ttl=timeout)
 )
-album_cache: Cache[int, Album] = Proxy(
-    lambda: TTLCache(maxsize=size, ttl=timeout),
+album_cache: BaseCache[int, Album] = Proxy(
+    lambda: make_cache(maxsize=size, ttl=timeout)
 )
 
 
@@ -92,11 +93,11 @@ async def get_audio(
     async def background_verify_url(url: str, key: AudioCacheKey):
         if await verify_url(url):
             return
-        audio_cache.pop(key)
+        await audio_cache.delete(key)
 
     async def verify_cache(song_id: int):
         key = AudioCacheKey(song_id, quality, encoding)
-        data = audio_cache.get(key)
+        data = await audio_cache.get(key)
         if not (data and data.url):
             return AudioInactive(song_id)
         if (
@@ -104,7 +105,7 @@ async def get_audio(
             and not await verify_url(data.url)  # type: ignore
         ):
             # 同步缓存且校验失效
-            audio_cache.pop(key)
+            await audio_cache.delete(key)
             return AudioInactive(song_id)
         elif get_config().audio_cache_validation_type == "sync":
             # 同步缓存且校验成功
@@ -131,7 +132,7 @@ async def get_audio(
         if audio_data is None:
             continue
         key = AudioCacheKey(song_id, quality, encoding)
-        audio_cache[key] = audio_data
+        await audio_cache.set(key, audio_data)
 
     return [
         inactive_map[x.id] if isinstance(x, AudioInactive) else x
@@ -145,7 +146,7 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
 
     read_cache_result = []
     for song_id in ids:
-        if data := song_cache.get(song_id):
+        if data := await song_cache.get(song_id):
             read_cache_result.append(data)
         else:
             read_cache_result.append(SongInactive(song_id))
@@ -156,7 +157,7 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
     for song_id, song_data in inactive_map.items():
         if song_data is None:
             continue
-        song_cache[song_id] = song_data
+        await song_cache.set(song_id, song_data)
 
     return [
         inactive_map[x.id] if isinstance(x, SongInactive) else x
@@ -167,7 +168,7 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
 async def get_lyric(id: int) -> LyricData:
     if not get_config().api_cache:
         return await run_with_semaphore(song.get_lyric(id), get_semaphore())
-    return data if (data := lyric_cache.get(id)) else await song.get_lyric(id)
+    return data if (data := await lyric_cache.get(id)) else await song.get_lyric(id)
 
 
 async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
@@ -175,18 +176,20 @@ async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
         return await song.search(keyword, limit)
 
     key = SearchCacheKey(keyword, limit)
-    if data := search_cache.get(key):
+    if data := await search_cache.get(key):
         return data
     else:
         result = await song.search(keyword, limit)
-        search_cache[key] = result
+        await search_cache.set(key, result)
         return result
 
 
 async def get_playlist(id: int) -> Optional[Playlist]:
     if not get_config().api_cache:
         return await run_with_semaphore(song.get_playlist(id), get_semaphore())
-    return data if (data := playlist_cache.get(id)) else await song.get_playlist(id)
+    return (
+        data if (data := await playlist_cache.get(id)) else await song.get_playlist(id)
+    )
 
 
 async def get_tracks(
@@ -197,8 +200,7 @@ async def get_tracks(
             song.get_tracks(id, limit, page), get_semaphore()
         )
 
-    data = playlist_cache.get(id) or await song.get_playlist(id)
-    if data is None:
+    if (data := (await playlist_cache.get(id)) or await song.get_playlist(id)) is None:
         return
 
     extracted = extract_playlist_tracks(data.track_ids, data.tracks, limit, page)
@@ -208,4 +210,4 @@ async def get_tracks(
 async def get_album(id: int) -> Optional[Album]:
     if not get_config().api_cache:
         return await run_with_semaphore(song.get_album(id), get_semaphore())
-    return data if (data := album_cache.get(id)) else await song.get_album(id)
+    return data if (data := await album_cache.get(id)) else await song.get_album(id)

@@ -4,7 +4,6 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
-cachetools==7.1.4
 certifi==2026.5.20
 cffi==2.0.0; platform_python_implementation != "PyPy"
 click==8.4.1
@@ -30,6 +29,7 @@ pygments==2.20.0
 pytest==9.0.3
 pytest-asyncio==1.4.0
 python-dotenv==1.2.2
+redis==8.0.0
 starlette==1.2.1
 tomli==2.4.1
 typing-extensions==4.15.0

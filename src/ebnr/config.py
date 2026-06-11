@@ -1,5 +1,6 @@
-from typing import Literal
+from typing import Literal, Optional
 
+from pydantic import BaseModel, Field
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -8,11 +9,22 @@ from pydantic_settings import (
 )
 
 
+class RedisConfig(BaseModel):
+    host: str = "localhost"
+    port: int = Field(default=6379, ge=0, le=65535)
+    db: int = Field(default=0, ge=0, le=15)
+    username: Optional[str] = None
+    password: Optional[str] = None
+    prefix: str = "ebnr"
+    max_connections: int = 50
+
+
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
         toml_file="config.toml",
         env_prefix="EBNR_",
         env_ignore_empty=True,
+        env_nested_delimiter="_",
     )
 
     @classmethod
@@ -35,11 +47,14 @@ class Config(BaseSettings):
     api_cache: bool = True
     cache_size: int = 1024
     cache_timeout: int = 86400
+    cache_backend: Literal["memory", "redis"] = "memory"
     audio_cache_timeout: int = 3600
     audio_cache_validation_type: Literal["sync", "background"] = "background"
     resolve_response_type: Literal["redirect", "proxy", "streaming-proxy"] = "redirect"
     redirect_code: Literal[302, 307] = 307
     api_concurrency: int = 200
+
+    redis: RedisConfig = Field(default_factory=RedisConfig, exclude=True)
 
 
 config = None

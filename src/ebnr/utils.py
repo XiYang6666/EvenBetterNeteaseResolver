@@ -1,10 +1,11 @@
 import inspect
 import re
+import time
 import urllib.parse
 from asyncio import Semaphore
 from dataclasses import dataclass
 from functools import wraps
-from typing import Coroutine, Literal, Optional
+from typing import Callable, Coroutine, Literal, Optional, TypeGuard
 
 import httpx
 
@@ -99,3 +100,49 @@ def with_semaphore(sem: Semaphore):
 async def run_with_semaphore[T](coroutine: Coroutine[None, None, T], sem: Semaphore):
     async with sem:
         return await coroutine
+
+
+class AutoRefreshValue[T]:
+    _SENTINEL = object()
+
+    def __init__(self, loader: Callable[[], T], ttl_seconds: float):
+        self.loader = loader
+        self.ttl = ttl_seconds
+        self._value: T | object = AutoRefreshValue._SENTINEL
+        self._expires_at: float = 0
+
+    @classmethod
+    def _check(cls, value: T | object) -> TypeGuard[T]:
+        return value is not cls._SENTINEL
+
+    def get(self) -> T:
+        now = time.monotonic()
+        if now > self._expires_at:
+            self._value = self.loader()
+            self._expires_at = now + self.ttl
+        assert AutoRefreshValue._check(self._value)
+        return self._value
+
+
+class AsyncAutoRefreshValue[T]:
+    _SENTINEL = object()
+
+    def __init__(
+        self, loader: Callable[[], Coroutine[None, None, T]], ttl_seconds: float
+    ):
+        self.loader = loader
+        self.ttl = ttl_seconds
+        self._value: T | object = AsyncAutoRefreshValue._SENTINEL
+        self._expires_at: float = 0
+
+    @classmethod
+    def _check(cls, value: T | object) -> TypeGuard[T]:
+        return value is not cls._SENTINEL
+
+    async def get(self) -> T:
+        now = time.time()
+        if now > self._expires_at:
+            self._value = await self.loader()
+            self._expires_at = now + self.ttl
+        assert AsyncAutoRefreshValue._check(self._value)
+        return self._value
