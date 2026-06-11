@@ -29,15 +29,17 @@ def get_redis_client():
     return redis_client
 
 
-async def check_redis_client():
-    client = await get_redis_client()
-    await client.ping()
-
-
 def load_cache():
     if get_config().cache_backend != "redis":
         return
     init_redis_client()
+
+
+async def test_cache():
+    if get_config().cache_backend != "redis":
+        return
+    client = get_redis_client()
+    await client.ping()
 
 
 async def stop_cache():

@@ -15,7 +15,7 @@ from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
 from ebnr.router.search import router as search_router
 from ebnr.router.tracks import router as tracks_router
-from ebnr.services.cache import check_redis_client, load_cache, stop_cache
+from ebnr.services.cache import test_cache, load_cache, stop_cache
 from ebnr.services.wrapped_api import is_vip
 from ebnr.utils import parse_netease_link
 
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     load_config()
     load_cookies(COOKIE_PATH)
     load_cache()
-    await check_redis_client()
+    await test_cache()
     yield
     await stop_cache()
 
