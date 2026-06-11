@@ -24,10 +24,13 @@ pluggy==1.6.0
 pycparser==3.0; implementation_name != "PyPy" and platform_python_implementation != "PyPy"
 pydantic==2.13.4
 pydantic-core==2.46.4
+pydantic-settings[toml]==2.14.1
 pygments==2.20.0
 pytest==9.0.3
 pytest-asyncio==1.4.0
+python-dotenv==1.2.2
 starlette==1.2.1
+tomli==2.4.1
 typing-extensions==4.15.0
 typing-inspection==0.4.2
 uvicorn==0.49.0

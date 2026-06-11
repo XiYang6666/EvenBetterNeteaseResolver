@@ -4,7 +4,7 @@ import urllib.parse
 from asyncio import Semaphore
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable, Coroutine, Literal, Optional, TypeGuard
+from typing import Coroutine, Literal, Optional
 
 import httpx
 
@@ -76,30 +76,6 @@ async def streaming_request(method: str, url: str, chunk_size: int = 1024):
         await async_client.aclose()
 
     return response, data_generator()
-
-
-def maybe_apply[T, R](value: Optional[T], func: Callable[[T], R]) -> Optional[R]:
-    if value is None:
-        return None
-    return func(value)
-
-
-def validate_with_fallback[T, S](
-    value: T, rule: Callable[[T], TypeGuard[S]], fallback: S
-) -> S:
-    if rule(value):
-        return value
-    return fallback
-
-
-def first_not_none[T](
-    *getters: *tuple[*tuple[Callable[[], Optional[T]], ...], Callable[[], T]],
-) -> T:
-    for getter in getters:
-        if (value := getter()) is not None:
-            return value
-    else:
-        assert False
 
 
 def with_semaphore(sem: Semaphore):
