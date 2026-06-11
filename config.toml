@@ -2,8 +2,18 @@ base_url = "http://127.0.0.1:8000"
 api_cache = true
 cache_size = 1024
 cache_timeout = 86400
+cache_backend = "memory"
 audio_cache_timeout = 3600
 audio_cache_validation_type = "background"
 resolve_response_type = "redirect"
 redirect_code = 307
 api_concurrency = 200
+
+[redis]
+host = "localhost"
+port = 6379
+db = 0
+#username = ""
+#password = ""
+prefix = "ebnr"
+max_connections = 50
