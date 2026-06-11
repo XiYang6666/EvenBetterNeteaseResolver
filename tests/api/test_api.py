@@ -94,25 +94,30 @@ async def post(
 @pytest.mark.asyncio
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_album(client: AsyncClient):
+    sem = Semaphore(5)  # 并发太多容易炸
     async with TaskGroup() as tg:
         for link in make_links("album", VALID_ALBUM_ID):
             # 拼接链接
-            tg.create_task(get(client, f"/album/{link}"))
+            tg.create_task(get(client, f"/album/{link}", sem=sem))
             # get link
-            tg.create_task(get(client, "/album", params={"link": link}))
+            tg.create_task(get(client, "/album", params={"link": link}, sem=sem))
             # post link
-            tg.create_task(post(client, "/album", json={"link": link}))
+            tg.create_task(post(client, "/album", json={"link": link}, sem=sem))
 
         # get id
-        tg.create_task(get(client, "/album", params={"id": f"{VALID_ALBUM_ID}"}))
+        tg.create_task(
+            get(client, "/album", params={"id": f"{VALID_ALBUM_ID}"}, sem=sem)
+        )
         # post id
-        tg.create_task(post(client, "/album", json={"id": f"{VALID_ALBUM_ID}"}))
+        tg.create_task(
+            post(client, "/album", json={"id": f"{VALID_ALBUM_ID}"}, sem=sem)
+        )
 
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="仅在本地运行")
 async def test_audio(client: AsyncClient):
-    sem = Semaphore(25)  # 并发太多容易炸
+    sem = Semaphore(5)  # 并发太多容易炸
     async with TaskGroup() as tg:
         for link in make_links("song", VALID_SONG_ID):
             # 拼接链接
