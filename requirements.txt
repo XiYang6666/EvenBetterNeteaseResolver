@@ -19,6 +19,7 @@ httpx[http2]==0.28.1
 hyperframe==6.1.0
 idna==3.18
 iniconfig==2.3.0
+lazy-object-proxy==1.12.0
 packaging==26.2
 pluggy==1.6.0
 pycparser==3.0; implementation_name != "PyPy" and platform_python_implementation != "PyPy"

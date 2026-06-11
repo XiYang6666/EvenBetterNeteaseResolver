@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 import httpx
-from cachetools import TTLCache
+from cachetools import Cache, TTLCache
+from lazy_object_proxy import Proxy
 
 from ebnr.config import get_config
 from ebnr.core.api import song
@@ -45,18 +46,30 @@ class SearchCacheKey:
     limit: int
 
 
-size = get_config().cache_size
-timeout = get_config().cache_timeout
-audio_timeout = get_config().audio_cache_timeout
-
-audio_cache = TTLCache[AudioCacheKey, AudioInfo](maxsize=size, ttl=audio_timeout)
-song_cache = TTLCache[int, SongInfo](maxsize=size, ttl=timeout)
-lyric_cache = TTLCache[int, LyricData](maxsize=size, ttl=timeout)
-search_cache = TTLCache[SearchCacheKey, list[SongInfo]](maxsize=size, ttl=timeout)
-playlist_cache = TTLCache[int, Playlist](maxsize=size, ttl=timeout)
-album_cache = TTLCache[int, Album](maxsize=size, ttl=timeout)
-
 ssl_context = ssl.create_default_context()
+
+size: int = Proxy(lambda: get_config().cache_size)
+timeout: int = Proxy(lambda: get_config().cache_timeout)
+audio_timeout: int = Proxy(lambda: get_config().audio_cache_timeout)
+
+audio_cache: Cache[AudioCacheKey, AudioInfo] = Proxy(
+    lambda: TTLCache(maxsize=size, ttl=audio_timeout),
+)
+song_cache: Cache[int, SongInfo] = Proxy(
+    lambda: TTLCache(maxsize=size, ttl=timeout),
+)
+lyric_cache: Cache[int, LyricData] = Proxy(
+    lambda: TTLCache(maxsize=size, ttl=timeout),
+)
+search_cache: Cache[SearchCacheKey, list[SongInfo]] = Proxy(
+    lambda: TTLCache(maxsize=size, ttl=timeout)
+)
+playlist_cache: Cache[int, Playlist] = Proxy(
+    lambda: TTLCache(maxsize=size, ttl=timeout)
+)
+album_cache: Cache[int, Album] = Proxy(
+    lambda: TTLCache(maxsize=size, ttl=timeout),
+)
 
 
 async def get_audio(
