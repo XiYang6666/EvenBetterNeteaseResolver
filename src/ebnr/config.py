@@ -7,10 +7,6 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
-type AudioCacheValidationTypeType = Literal["sync", "background"]
-type ResolveResponseTypeType = Literal["redirect", "proxy", "streaming-proxy"]
-type RedirectCodeType = Literal[302, 307]
-
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
@@ -40,8 +36,8 @@ class Config(BaseSettings):
     cache_size: int = 1024
     cache_timeout: int = 86400
     audio_cache_timeout: int = 3600
-    audio_cache_validation_type: AudioCacheValidationTypeType = "background"
-    resolve_response_type: ResolveResponseTypeType = "redirect"
+    audio_cache_validation_type: Literal["sync", "background"] = "background"
+    resolve_response_type: Literal["redirect", "proxy", "streaming-proxy"] = "redirect"
     redirect_code: Literal[302, 307] = 307
     api_concurrency: int = 200
 
