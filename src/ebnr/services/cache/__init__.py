@@ -1,7 +1,7 @@
 from dataclasses import fields, is_dataclass
 from typing import Any, Optional, TypeAlias
 
-from redis.asyncio import Redis
+from redis.asyncio import BlockingConnectionPool, Redis
 
 from ebnr.config import get_config
 from ebnr.services.cache.base_cache import BaseCache
@@ -14,14 +14,17 @@ redis_client: Optional[Redis] = None
 def init_redis_client():
     global redis_client
     config = get_config().redis
-    redis_client = Redis(
+    pool = BlockingConnectionPool(
         host=config.host,
         port=config.port,
         db=config.db,
         username=config.username,
         password=config.password,
         max_connections=config.max_connections,
+        timeout=20,
+        decode_responses=False,
     )
+    redis_client = Redis(connection_pool=pool)
 
 
 def get_redis_client():
