@@ -20,10 +20,8 @@ jobs:
       - name: Install dependencies
         run: pdm install
 
-      - name: Write cookie to file
-        run: |
-          echo '${{ secrets.NETEASE_COOKIE }}' > data/cookie.json
-          chmod 600 data/cookie.json
+      - name: Create cookie file
+        run: echo '{}' > data/cookie.json
 
       - name: Run pytest
         run: pdm run test
