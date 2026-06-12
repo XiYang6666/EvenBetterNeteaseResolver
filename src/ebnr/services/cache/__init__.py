@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from dataclasses import fields, is_dataclass
 from typing import Any, TypeAlias, cast
@@ -22,17 +23,22 @@ async def empty_context_manager():
 def redis_client():
     if get_config().cache_backend != "redis":
         return cast(Redis, empty_context_manager())
-    config = get_config().redis
-    pool = BlockingConnectionPool(
-        host=config.host,
-        port=config.port,
-        db=config.db,
-        username=config.username,
-        password=config.password,
-        max_connections=config.max_connections,
-        timeout=20,
-        decode_responses=False,
-    )
+    if os.getenv("VERCEL") == "1":
+        redis_url = os.environ.get("REDIS_URL")
+        assert redis_url
+        pool = BlockingConnectionPool.from_url(redis_url)
+    else:
+        config = get_config().redis
+        pool = BlockingConnectionPool(
+            host=config.host,
+            port=config.port,
+            db=config.db,
+            username=config.username,
+            password=config.password,
+            max_connections=config.max_connections,
+            timeout=20,
+            decode_responses=False,
+        )
     client = Redis(connection_pool=pool)
     return client
 
