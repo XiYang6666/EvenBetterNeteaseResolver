@@ -15,7 +15,6 @@ from tests.core.constants import (
 @pytest.fixture
 def client():
     client = EBNR()
-    client.load_cookies_json("./data/cookie.json")
     return client
 
 
