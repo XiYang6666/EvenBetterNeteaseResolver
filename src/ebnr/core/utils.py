@@ -78,5 +78,6 @@ def extract_playlist_tracks(
     end_id = page * limit + limit
     id_list: list[int] = all_id[begin_id:end_id]
     return ExtractedTracks(
-        known_tracks[begin_id:end_id], id_list[max(begin_id, 1000) : end_id]
+        known_tracks[begin_id:end_id],
+        id_list[max(begin_id, len(known_tracks)) : end_id],
     )
