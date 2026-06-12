@@ -11,6 +11,16 @@
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
 
+> [!TIP]
+> **如何获取网易云 Cookie？**
+>
+> 以 FireFox 为例
+>
+> 1. 在浏览器中打开 [music.163.com](https://music.163.com) 并登录账号
+> 2. 按 F12 打开开发者工具 → Network(网络) 标签页
+> 3. 刷新页面，找到任意一个请求，选择 Cookie 栏, 右击复制全部
+> 4. 将复制的 JSON 中的外层 ` {"请求 Cookie": ...}` 去掉, 仅保留内层对象(即`{"__csrf":"xxx",...}`), 填入 `EBNR_COOKIE` 环境变量
+
 ## 部署
 
 ### 运行项目
@@ -67,14 +77,6 @@ services:
 | `EBNR_BASE_URL`      | true  | Vercel 部署域名，例如 `https://your-app.vercel.app`               |
 | `EBNR_COOKIE`        | false | 网易云音乐 Cookie（JSON 字符串格式），不填则无法解析 VIP 歌曲     |
 | `EBNR_CACHE_BACKEND` | false | 缓存后端, 如果项目配置了 Vercel Storage 的 Redis 应设置为 `redis` |
-
-> [!TIP]
-> **如何获取网易云 Cookie？**
->
-> 1. 在浏览器中打开 [music.163.com](https://music.163.com) 并登录账号
-> 2. 按 F12 打开开发者工具 → Network 标签页
-> 3. 刷新页面，找到任意一个请求，复制其 Request Headers 中的 `Cookie` 字段值
-> 4. 将其转换为 JSON 格式后填入 `EBNR_COOKIE` 环境变量
 
 **4. 部署**
 
