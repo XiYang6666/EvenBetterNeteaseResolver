@@ -48,6 +48,8 @@ services:
 | 配置项                           | 默认值                | 注释                                                                            |
 | -------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
 | EBNR_BASE_URL                    | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值                                      |
+| COOKIE_FILE_PATH                 | ./data/cookie.json    | json Cookie 文件路径                                                            |
+| COOKIE_FILE_TYPE                 | object                | json Cookie 文件类型, 可选 object 与 list                                       |
 | EBNR_API_CACHE                   | true                  | 是否缓存上游网易云 API 返回值                                                   |
 | EBNR_CACHE_SIZE                  | 1024                  | 上游 API 数据缓存量                                                             |
 | EBNR_CACHE_TIMEOUT               | 86400                 | 上游 API 数据缓存时长                                                           |

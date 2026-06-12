@@ -44,7 +44,8 @@ class Config(BaseSettings):
         )
 
     base_url: str = "http://127.0.0.1:8000"
-    cookie_path: str = Field(default="./data/cookie.json", exclude=True)
+    cookie_file_path: str = Field(default="./data/cookie.json", exclude=True)
+    cookie_file_type: Literal["object", "list"] = "object"
 
     api_cache: bool = True
     cache_size: int = 1024

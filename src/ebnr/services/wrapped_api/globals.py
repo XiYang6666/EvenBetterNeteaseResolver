@@ -15,13 +15,18 @@ http_client = register_resource(httpx.AsyncClient(verify=ssl_context))
 
 @Lazy
 def ebnr_client():
-    cookie_path = Path(get_config().cookie_path)
-    if not cookie_path.exists():
-        cookie_path.write_text(
-            '{\n    "__remember_me": "true",\n    "os": "pc"\n}',
-            encoding="utf-8",
-        )
+    cookie_path = Path(get_config().cookie_file_path)
+    cookie_type = get_config().cookie_file_type
 
     ebnr = EBNR(semaphore=api_semaphore.value)
-    ebnr.load_cookies_json(cookie_path)
+    if not cookie_path.exists() and cookie_type == "object":
+        cookie_path.write_text("{}", encoding="utf-8")
+    elif not cookie_path.exists() and cookie_type == "list":
+        cookie_path.write_text("[]", encoding="utf-8")
+
+    if cookie_type == "object":
+        ebnr.load_cookies_json(cookie_path)
+    elif cookie_type == "list":
+        ebnr.load_cookies_json_list(cookie_path)
+
     return ebnr

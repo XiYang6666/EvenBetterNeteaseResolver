@@ -1,8 +1,6 @@
 import httpx
 
-from ebnr.core.api import raw
-from ebnr.services.wrapped_api.globals import api_semaphore
-from ebnr.utils.semaphore import run_with_semaphore
+from ebnr.services.wrapped_api.globals import ebnr_client
 from ebnr.utils.ttl_value import AsyncTTLValue
 
 from . import song
@@ -12,7 +10,7 @@ __all__ = ["song", "is_vip"]
 
 async def is_vip_loader() -> bool:
     try:
-        data = await run_with_semaphore(raw.user.get_user_info(), api_semaphore.value)
+        data = await ebnr_client.value.raw.user.get_user_info()
     except httpx.RequestError:
         return False
     else:
