@@ -21,7 +21,7 @@
 
 ### Docker 部署
 
-使用 docker-compose
+使用 docker-compose 一键部署
 
 ```yaml
 services:
@@ -39,177 +39,94 @@ services:
       - 8000:8000
 ```
 
-一键部署
+### Vercel 部署
+
+> [!NOTE]
+> Vercel 的 Serverless 环境不支持持久化文件存储，**Cookie 必须通过环境变量传入**。
+> 如需使用缓存，请配置外部 Redis（推荐 [Upstash](https://upstash.com/)）。
+
+#### 一键部署
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/XiYang6666/EvenBetterNeteaseResolver&env=EBNR_BASE_URL,EBNR_COOKIE&envDescription=部署所需的环境变量配置&envLink=https://github.com/XiYang6666/EvenBetterNeteaseResolver%23配置)
+
+#### 手动部署步骤
+
+**1. Fork 仓库**
+
+点击右上角 Fork，将本仓库 Fork 到你自己的 GitHub 账号下。
+
+**2. 导入到 Vercel**
+
+前往 [vercel.com/new](https://vercel.com/new)，选择刚才 Fork 的仓库导入。
+
+**3. 配置环境变量**
+
+在 Vercel 项目的 **Settings → Environment Variables** 中添加以下变量：
+
+| 变量名               | 必填  | 说明                                                              |
+| -------------------- | ----- | ----------------------------------------------------------------- |
+| `EBNR_BASE_URL`      | true  | Vercel 部署域名，例如 `https://your-app.vercel.app`               |
+| `EBNR_COOKIE`        | false | 网易云音乐 Cookie（JSON 字符串格式），不填则无法解析 VIP 歌曲     |
+| `EBNR_CACHE_BACKEND` | false | 缓存后端, 如果项目配置了 Vercel Storage 的 Redis 应设置为 `redis` |
+
+> [!TIP]
+> **如何获取网易云 Cookie？**
+>
+> 1. 在浏览器中打开 [music.163.com](https://music.163.com) 并登录账号
+> 2. 按 F12 打开开发者工具 → Network 标签页
+> 3. 刷新页面，找到任意一个请求，复制其 Request Headers 中的 `Cookie` 字段值
+> 4. 将其转换为 JSON 格式后填入 `EBNR_COOKIE` 环境变量
+
+**4. 部署**
+
+点击 **Deploy**，等待部署完成后即可通过 Vercel 分配的域名访问。
+
+**5. 验证部署**
+
+访问 `https://your-app.vercel.app/`，若返回欢迎信息则说明部署成功。
+API 文档可通过 `https://your-app.vercel.app/docs` 访问。
 
 ## 配置
 
 配置文件在项目根目录下的 `config.toml` 中, 可以使用环境变量覆盖配置.
 
-| 配置项                           | 默认值                | 注释                                                                            |
-| -------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
-| EBNR_BASE_URL                    | http://127.0.0.1:8000 | API 根路径, 用于 meting-api 正确处理返回值                                      |
-| COOKIE_FILE_PATH                 | ./data/cookie.json    | json Cookie 文件路径                                                            |
-| COOKIE_FILE_TYPE                 | object                | json Cookie 文件类型, 可选 object 与 list                                       |
-| EBNR_API_CACHE                   | true                  | 是否缓存上游网易云 API 返回值                                                   |
-| EBNR_CACHE_SIZE                  | 1024                  | 上游 API 数据缓存量                                                             |
-| EBNR_CACHE_TIMEOUT               | 86400                 | 上游 API 数据缓存时长                                                           |
-| EBNR_CACHE_BACKEND               | memory                | 缓存后端                                                                        |
-| EBNR_AUDIO_CACHE_TIMEOUT         | 3600                  | 音频链接缓存时长, 为 0 则不缓存                                                 |
-| EBNR_AUDIO_CACHE_VALIDATION_TYPE | background            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效, 可选 sync 和 background |
-| EBNR_RESOLVE_RESPONSE_TYPE       | redirect              | 音频解析返回类型, 可选 redirect, proxy, streaming-proxy                         |
-| EBNR_REDIRECT_CODE               | 307                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 307 和 302        |
-| EBNR_API_CONCURRENCY             | 200                   | 上游 API 请求最大并发量                                                         |
-| EBNR_REDIS_HOST                  | localhost             | Redis 服务 host                                                                 |
-| EBNR_REDIS_PORT                  | 6379                  | Redis 服务端口                                                                  |
-| EBNR_REDIS_DB                    | 0                     | Redis 数据库编号                                                                |
-| EBNR_REDIS_USERNAME              | None                  | Redis 用户名                                                                    |
-| EBNR_REDIS_PASSWORD              | None                  | Redis 密码                                                                      |
-| EBNR_REDIS_PREFIX                | ebnr                  | Redis 缓存键前缀                                                                |
-| EBNR_REDIS_MAX_CONNECTIONS       | 50                    | Redis 最大连接数                                                                |
+### 基础配置
+
+| 配置项                             | 默认值                  | 注释                                                                                    |
+| ---------------------------------- | ----------------------- | --------------------------------------------------------------------------------------- |
+| `EBNR_BASE_UR`                     | `http://127.0.0.1:8000` | API 根路径, 用于 meting-api 正确处理返回值                                              |
+| `EBNR_COOKIE`                      | `None`                  | json 格式 网易云音乐 Cookie 字符串                                                      |
+| `EBNR_COOKIE_FILE_PATH`            | `./data/cookie.json`    | json 格式 网易云音乐 Cookie 文件路径, `EBNR_COOKIE` 设置时无效                          |
+| `EBNR_COOKIE_FILE_TYPE`            | `object`                | json 格式 网易云音乐 Cookie 文件类型, `EBNR_COOKIE` 设置时无效, 可选 `object` 或 `list` |
+| `EBNR_API_CACHE`                   | `true`                  | 是否缓存上游网易云 API 返回值                                                           |
+| `EBNR_CACHE_SIZE`                  | `1024`                  | 上游 API 数据缓存量                                                                     |
+| `EBNR_CACHE_TIMEOUT`               | `86400`                 | 上游 API 数据缓存时长                                                                   |
+| `EBNR_CACHE_BACKEND`               | `memory`                | 缓存后端 ， 可选 `memory` 或 `redis`                                                    |
+| `EBNR_AUDIO_CACHE_TIMEOUT`         | `3600  `                | 音频链接缓存时长, 为 0 则不缓存                                                         |
+| `EBNR_AUDIO_CACHE_VALIDATION_TYPE` | `background`            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效, 可选 `sync` 或 `background`     |
+| `EBNR_RESOLVE_RESPONSE_TYPE`       | `redirect`              | 音频解析返回类型, 可选 `redirect`, `proxy`或 `streaming-proxy`                          |
+| `EBNR_REDIRECT_CODE`               | `307`                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 `307` 或 `302`            |
+| `EBNR_API_CONCURRENCY`             | `200`                   | 上游 API 请求最大并发量                                                                 |
+
+### Redis 配置
+
+`EBNR_CACHE_BACKEND` 不为 `redis` 或 Vercel 环境下无效. Vercel 环境下会通过 `REDIS_URL` 环境变量配置 Redis
+
+| 配置项                       | 默认值      | 注释             |
+| ---------------------------- | ----------- | ---------------- |
+| `EBNR_REDIS_HOST`            | `localhost` | Redis 服务 host  |
+| `EBNR_REDIS_PORT`            | `6379`      | Redis 服务端口   |
+| `EBNR_REDIS_DB`              | `0`         | Redis 数据库编号 |
+| `EBNR_REDIS_USERNAME`        | `None`      | Redis 用户名     |
+| `EBNR_REDIS_PASSWORD`        | `None`      | Redis 密码       |
+| `EBNR_REDIS_PREFIX`          | `ebnr`      | Redis 缓存键前缀 |
+| `EBNR_REDIS_MAX_CONNECTIONS` | `50`        | Redis 最大连接数 |
 
 ## 请求格式
 
 访问 https://ebnr.xiyang6666.top/docs 以获取 OpenAPI 文档.
 
-支持的网易云链接格式为 `[http://|https://][y.]music.163.com[/m]/<song|album|playlist></<id>|?id=<id>>`
-
-### GET `/`
-
-根路径, 显示欢迎信息与状态.
-
-支持拼接网易云分享链接, 会自动根据链接类型重定向至正确的路径.
-
-### GET `/meting`
-
-meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-api)
-
-### GET/POST `/info`
-
-获取歌曲信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-支持拼接网易云分享链接, 相当于传入单个 id.
-
-示例:
-`https://ebnr.xiyang6666.top/info/https://music.163.com/song?id=557579321`
-
-请求参数:
-
-| 参数    | 必填 | GET | POST | 类型     | 注释                                                                                     |
-| ------- | ---- | --- | ---- | -------- | ---------------------------------------------------------------------------------------- |
-| `ids`   | ❌   | ❌  | ✅   | number[] | 歌曲 ID 列表, 如果传入则返回 `SongInfo[]`                                                |
-| `id`    | ❌   | ✅  | ✅   | number   | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]`      |
-| `links` | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `SongInfo[]`                                            |
-| `link`  | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `SongInfo`, 传入多个时返回 `SongInfo[]` |
-
-`ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
-
-### GET/POST `/audio`
-
-获取歌曲音频, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-支持拼接网易云分享链接, 相当于传入单个 id.
-
-示例
-`https://ebnr.xiyang6666.top/audio/https://music.163.com/song?id=557581315`
-
-请求参数:
-
-| 参数      | 必填 | GET | POST | 类型     | 注释                                                                                                    |
-| --------- | ---- | --- | ---- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `ids`     | ❌   | ❌  | ✅   | number[] | 歌曲 ID 列表, 如果传入则返回 `AudioInfo[]`                                                              |
-| `id`      | ❌   | ✅  | ✅   | number   | 歌曲 ID, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`                   |
-| `links`   | ❌   | ❌  | ✅   | string[] | 歌曲分享链接列表，如果传入则返回 `AudioInfo[]`                                                          |
-| `link`    | ❌   | ✅  | ✅   | string   | 歌曲分享链接, GET 请求可传入多个, 传入单个时返回 `AudioInfo`, 传入多个时返回 `AudioInfo[]`              |
-| `quality` | ❌   | ✅  | ✅   | string   | 音频质量, 可选 `standard`(默认), `higher`, `exhigh`, `lossless`, `hires`, `jyeffect`, `sky`, `jymaster` |
-
-`ids`, `id`, `links`, `link` 至少应传入一种, 传入多个时优先级从前往后.
-
-### GET/POST `/resolve`
-
-解析歌曲音频, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-与 `/audio` 不同, 该接口会直接重定向至歌曲的音频地址.
-
-仅支持拼接网易云分享链接.
-
-示例
-`https://ebnr.xiyang6666.top/resolve/https://music.163.com/song?id=1357953770`
-
-### GET/POST `/playlist`
-
-获取歌单信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-支持拼接网易云分享链接, 相当于传入单个 id.
-
-示例
-`https://ebnr.xiyang6666.top/playlist/https://music.163.com/playlist?id=14316757648`
-
-请求参数:
-
-| 参数   | 必填 | GET | POST | 类型   | 注释         |
-| ------ | ---- | --- | ---- | ------ | ------------ |
-| `id`   | ❌   | ✅  | ✅   | number | 歌曲 ID      |
-| `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
-
-- `id`(可选): 歌单 ID
-- `link`(可选): 歌单分享链接
-
-`id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
-
-> [!TIP]
-> `/playlist` API 返回的 `Playlisy` 的 tracks 属性仅包含前 1000 首歌的信息, 要获取全部歌曲请调用 `/tracks`.
-
-### GET/POST `/tracks`
-
-获取歌单内的歌曲信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-支持拼接网易云分享链接, 相当于传入单个 id.
-
-示例
-`https://ebnr.xiyang6666.top/tracks/https://music.163.com/playlist?id=14316757648`
-
-请求参数:
-
-| 参数    | 必填            | GET | POST | 类型   | 注释         |
-| ------- | --------------- | --- | ---- | ------ | ------------ |
-| `id`    | ❌              | ✅  | ✅   | number | 歌曲 ID      |
-| `link`  | ❌              | ✅  | ✅   | string | 歌曲分享链接 |
-| `limit` | ❌(默认 100000) | ✅  | ✅   | number | 单页歌曲数   |
-| `page`  | ❌(默认 0)      | ✅  | ✅   | number | 页序号       |
-
-- `id`(可选): 歌单 ID
-- `link`(可选): 歌单分享链接
-
-`id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
-
-### GET/POST `/album`
-
-获取专辑信息, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-支持拼接网易云分享链接, 相当于传入单个 id.
-
-示例
-`https://ebnr.xiyang6666.top/album/https://music.163.com/album?id=38591089`
-
-请求参数:
-
-| 参数   | 必填 | GET | POST | 类型   | 注释         |
-| ------ | ---- | --- | ---- | ------ | ------------ |
-| `id`   | ❌   | ✅  | ✅   | number | 歌曲 ID      |
-| `link` | ❌   | ✅  | ✅   | string | 歌曲分享链接 |
-
-`id`, `link` 至少应传入一种, 传入多个时优先级从前往后.
-
-### GET/POST `/search`
-
-搜索歌曲, 同时支持 GET 与 POST, POST 请求参数为 JSON 格式.
-
-请求参数:
-
-| 参数      | 必填       | GET | POST | 类型   | 注释     |
-| --------- | ---------- | --- | ---- | ------ | -------- |
-| `keyword` | ✅         | ✅  | ✅   | string | 关键词   |
-| `limit`   | ❌(默认10) | ✅  | ✅   | number | 搜索条数 |
+[API 文档](docs/api-docs.md)
 
 ## 已知问题
 
