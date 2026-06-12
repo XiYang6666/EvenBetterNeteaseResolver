@@ -20,8 +20,10 @@ def ebnr_client():
 
     ebnr = EBNR(semaphore=api_semaphore.value)
     if not cookie_path.exists() and cookie_type == "object":
+        cookie_path.parent.mkdir(parents=True, exist_ok=True)
         cookie_path.write_text("{}", encoding="utf-8")
     elif not cookie_path.exists() and cookie_type == "list":
+        cookie_path.parent.mkdir(parents=True, exist_ok=True)
         cookie_path.write_text("[]", encoding="utf-8")
 
     if cookie_type == "object":
