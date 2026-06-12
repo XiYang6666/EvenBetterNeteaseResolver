@@ -14,12 +14,7 @@
 > [!TIP]
 > **如何获取网易云 Cookie？**
 >
-> 以 FireFox 为例
->
-> 1. 在浏览器中打开 [music.163.com](https://music.163.com) 并登录账号
-> 2. 按 F12 打开开发者工具 → Network(网络) 标签页
-> 3. 刷新页面，找到任意一个请求，选择 Cookie 栏, 右击复制全部
-> 4. 将复制的 JSON 中的外层 ` {"请求 Cookie": ...}` 去掉, 仅保留内层对象(即`{"__csrf":"xxx",...}`), 填入 `EBNR_COOKIE` 环境变量
+> 详见: [获取网易云音乐 Cookie](docs/get-cookie.md)
 
 ## 部署
 
