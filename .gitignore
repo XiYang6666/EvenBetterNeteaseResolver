@@ -163,4 +163,5 @@ cython_debug/
 
 .vscode
 /data/*
-!/data/cookie.example.json
+!/data/cookie.example_object.json
+!/data/cookie.example_list.json
