@@ -6,7 +6,8 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 
 from ebnr.config import get_config
 from ebnr.services.wrapped_api.song import get_audio
-from ebnr.utils import parse_netease_link, streaming_request
+from ebnr.utils.http import streaming_request
+from ebnr.utils.netease import parse_netease_link
 
 router = APIRouter(prefix="/resolve", tags=["音频解析"])
 
@@ -27,7 +28,7 @@ async def resolve_link(link: str, id: Optional[int] = None):
         raise HTTPException(404, "VIP Song")
     if not data[0].url:
         raise HTTPException(404, "Audio Not Available")
-    
+
     if get_config().resolve_response_type == "redirect":
         return RedirectResponse(data[0].url, get_config().redirect_code)
     elif get_config().resolve_response_type == "proxy":

@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from ebnr.core.types import AudioInfo, Quality
 from ebnr.services.wrapped_api.song import get_audio
-from ebnr.utils import NeteaseLinkInfo, parse_netease_link
+from ebnr.utils.netease import NeteaseLinkInfo, parse_netease_link
 
 router = APIRouter(prefix="/audio", tags=["音频信息"])
 

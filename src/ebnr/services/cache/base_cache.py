@@ -24,3 +24,5 @@ class BaseCache[K, V](ABC):
 
     @abstractmethod
     async def exists(self, key: K) -> bool: ...
+
+    

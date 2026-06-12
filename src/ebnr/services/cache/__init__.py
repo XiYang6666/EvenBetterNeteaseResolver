@@ -1,18 +1,27 @@
+from contextlib import asynccontextmanager
 from dataclasses import fields, is_dataclass
-from typing import Any, Optional, TypeAlias
+from typing import Any, TypeAlias, cast
 
 from redis.asyncio import BlockingConnectionPool, Redis
 
 from ebnr.config import get_config
+from ebnr.services.async_resource import register_lazy_resource
 from ebnr.services.cache.base_cache import BaseCache
 from ebnr.services.cache.memory_cache import MemoryCache
 from ebnr.services.cache.redis_cache import RedisCache
+from ebnr.utils.lazy import Lazy
 
-redis_client: Optional[Redis] = None
+
+@asynccontextmanager
+async def empty_context_manager():
+    yield
 
 
-def init_redis_client():
-    global redis_client
+@register_lazy_resource
+@Lazy
+def redis_client():
+    if get_config().cache_backend != "redis":
+        return cast(Redis, empty_context_manager())
     config = get_config().redis
     pool = BlockingConnectionPool(
         host=config.host,
@@ -24,31 +33,14 @@ def init_redis_client():
         timeout=20,
         decode_responses=False,
     )
-    redis_client = Redis(connection_pool=pool)
-
-
-def get_redis_client():
-    assert redis_client
-    return redis_client
-
-
-def load_cache():
-    if get_config().cache_backend != "redis":
-        return
-    init_redis_client()
+    client = Redis(connection_pool=pool)
+    return client
 
 
 async def test_cache():
     if get_config().cache_backend != "redis":
         return
-    client = get_redis_client()
-    await client.ping()
-
-
-async def stop_cache():
-    if get_config().cache_backend != "redis":
-        return
-    await get_redis_client().close()
+    await redis_client.value.ping()
 
 
 BaseTypes: TypeAlias = str | int | bool
@@ -85,7 +77,7 @@ def make_cache[K, V](maxsize: int, ttl: float) -> BaseCache[K, V]:  # pyright: i
     elif cache_backend == "redis":
         return RedisCache(
             ttl,
-            get_redis_client(),
+            redis_client.value,
             get_config().redis.prefix,
             serializer,
         )

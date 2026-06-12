@@ -15,9 +15,10 @@ from ebnr.router.playlist import router as playlist_router
 from ebnr.router.resolve import router as resolve_router
 from ebnr.router.search import router as search_router
 from ebnr.router.tracks import router as tracks_router
-from ebnr.services.cache import load_cache, stop_cache, test_cache
+from ebnr.services.async_resource import enter_resources, exit_resources
+from ebnr.services.cache import test_cache
 from ebnr.services.wrapped_api import is_vip
-from ebnr.utils import parse_netease_link
+from ebnr.utils.netease import parse_netease_link
 
 COOKIE_PATH = Path("data/cookie.json")
 
@@ -29,10 +30,10 @@ async def lifespan(app: FastAPI):
 
     load_config()
     load_cookies(COOKIE_PATH)
-    load_cache()
+    await enter_resources()
     await test_cache()
     yield
-    await stop_cache()
+    await exit_resources()
 
 
 app = FastAPI(lifespan=lifespan, title="Even Better Netease Resolver (EBNR)")
