@@ -49,6 +49,9 @@ services:
 > [!NOTE]
 > Vercel 的 Serverless 环境不支持持久化文件存储, **Cookie 必须通过环境变量传入**.
 
+> [!NOTE]
+> Vercel 的默认域名在大陆地区无法访问, 使用 Vercel 部署项目建议准备一个自己的域名并绑定到实例.
+
 #### 一键部署
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/XiYang6666/EvenBetterNeteaseResolver&env=EBNR_BASE_URL,EBNR_COOKIE&envDescription=部署所需的环境变量配置&envLink=https://github.com/XiYang6666/EvenBetterNeteaseResolver%23配置)
