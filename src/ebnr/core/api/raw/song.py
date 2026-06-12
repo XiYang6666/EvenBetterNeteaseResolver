@@ -12,6 +12,8 @@ async def get_audio(
     ids: list[int],
     quality: Quality = Quality.STANDARD,
     encoding: Encoding = Encoding.FLAC,
+    *,
+    cookies: Optional[dict[str, str]] = None,
 ) -> dict:
     request_url = "https://interface3.music.163.com/eapi/song/enhance/player/url/v1"
     eapi_path = "/api/song/enhance/player/url/v1"
@@ -24,7 +26,7 @@ async def get_audio(
     if quality == Quality.SKY:
         payload["immerseType"] = "c51"
     form = make_eapi_form(eapi_path, json.dumps(payload))
-    async with make_client() as client:
+    async with make_client(cookies) as client:
         response = await client.post(request_url, data=form)
     result = response.json()
     if result["code"] != 200:
@@ -36,14 +38,18 @@ async def get_audio(
     return result
 
 
-async def get_song_info(ids: list[int]) -> dict:
+async def get_song_info(
+    ids: list[int],
+    *,
+    cookies: Optional[dict[str, str]] = None,
+) -> dict:
     request_url = "https://music.163.com/weapi/v3/song/detail"
     form = make_weapi_form(
         json.dumps(
             {"c": json.dumps([{"id": id} for id in ids]), "ids": json.dumps(ids)}
         )
     )
-    async with make_client() as client:
+    async with make_client(cookies) as client:
         response = await client.post(request_url, data=form)
     result = response.json()
     if result["code"] != 200:
@@ -55,9 +61,13 @@ async def get_song_info(ids: list[int]) -> dict:
     return result
 
 
-async def get_lyric(id: int) -> dict:
+async def get_lyric(
+    id: int,
+    *,
+    cookies: Optional[dict[str, str]] = None,
+) -> dict:
     request_url = "https://interface3.music.163.com/api/song/lyric"
-    async with make_client() as client:
+    async with make_client(cookies) as client:
         response = await client.post(
             request_url,
             data={
@@ -82,9 +92,14 @@ async def get_lyric(id: int) -> dict:
     return result
 
 
-async def search(keyword: str, limit: int = 10) -> dict:
+async def search(
+    keyword: str,
+    limit: int = 10,
+    *,
+    cookies: Optional[dict[str, str]] = None,
+) -> dict:
     request_url = "https://music.163.com/api/cloudsearch/pc"
-    async with make_client() as client:
+    async with make_client(cookies) as client:
         response = await client.post(
             request_url,
             data={"s": keyword, "type": 1, "limit": limit},
@@ -99,9 +114,13 @@ async def search(keyword: str, limit: int = 10) -> dict:
     return result
 
 
-async def get_playlist(id: int) -> Optional[dict]:
+async def get_playlist(
+    id: int,
+    *,
+    cookies: Optional[dict[str, str]] = None,
+) -> Optional[dict]:
     request_url = "https://music.163.com/api/v6/playlist/detail"
-    async with make_client() as client:
+    async with make_client(cookies) as client:
         response = await client.post(
             request_url,
             data={"id": id, "n": 100000, "s": 8},
@@ -118,9 +137,13 @@ async def get_playlist(id: int) -> Optional[dict]:
     return result
 
 
-async def get_album(id: int) -> Optional[dict]:
+async def get_album(
+    id: int,
+    *,
+    cookies: Optional[dict[str, str]] = None,
+) -> Optional[dict]:
     request_url = f"https://music.163.com/api/v1/album/{id}"
-    async with make_client() as client:
+    async with make_client(cookies) as client:
         response = await client.get(request_url)
     result = response.json()
     if result["code"] == 404:

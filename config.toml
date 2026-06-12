@@ -1,6 +1,7 @@
 base_url = "http://127.0.0.1:8000"
-api_cache = true
+cookie_path= "./data/cookie.json"
 
+api_cache = true
 cache_size = 1024
 cache_timeout = 86400
 cache_backend = "memory"

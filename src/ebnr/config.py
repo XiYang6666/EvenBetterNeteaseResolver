@@ -44,8 +44,9 @@ class Config(BaseSettings):
         )
 
     base_url: str = "http://127.0.0.1:8000"
-    api_cache: bool = True
+    cookie_path: str = "./data/cookie.json"
 
+    api_cache: bool = True
     cache_size: int = 1024
     cache_timeout: int = 86400
     cache_backend: Literal["memory", "redis"] = "memory"

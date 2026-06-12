@@ -1,12 +1,10 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Literal, Mapping, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 
 from ebnr.config import get_config, load_config
-from ebnr.core.cookie import load_cookies
 from ebnr.router.album import router as album_router
 from ebnr.router.audio import router as audio_router
 from ebnr.router.info import router as info_router
@@ -20,16 +18,10 @@ from ebnr.services.cache import test_cache
 from ebnr.services.wrapped_api import is_vip
 from ebnr.utils.netease import parse_netease_link
 
-COOKIE_PATH = Path("data/cookie.json")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not COOKIE_PATH.exists():
-        COOKIE_PATH.write_text("{}", encoding="utf-8")
-
     load_config()
-    load_cookies(COOKIE_PATH)
     await enter_resources()
     await test_cache()
     yield

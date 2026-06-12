@@ -7,10 +7,9 @@ from typing import Iterable, Literal, Optional, Protocol
 
 import httpx
 
-from ebnr.core.cookie import get_cookies
 from ebnr.core.types import SongInfo
 
-COOKIES = {
+USER_AGENTS = {
     "pc": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0",
     "mobile": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
     "linux": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36",
@@ -21,20 +20,16 @@ type DeviceType = Literal["pc", "mobile", "linux"]
 ssl_context = ssl.create_default_context()
 
 
-def make_client(*, with_cookie: bool = True, device_type: DeviceType = "pc"):
+def make_client(
+    cookies: Optional[dict[str, str]] = None, *, device_type: DeviceType = "pc"
+):
     return httpx.AsyncClient(
         verify=ssl_context,
         headers={
-            "User-Agent": COOKIES[device_type],
+            "User-Agent": USER_AGENTS[device_type],
             "Referer": "https://music.163.com",
         },
-        cookies={
-            **get_cookies(),
-            "__remember_me": "true",
-            "os": "pc",
-        }
-        if with_cookie
-        else None,
+        cookies=cookies,
     )
 
 
