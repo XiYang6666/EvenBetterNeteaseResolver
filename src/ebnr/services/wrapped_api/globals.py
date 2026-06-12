@@ -1,3 +1,4 @@
+import os
 from asyncio import Semaphore
 from pathlib import Path
 
@@ -18,22 +19,24 @@ def ebnr_client():
     cookie_file_path = Path(get_config().cookie_file_path)
     cookie_file_type = get_config().cookie_file_type
     config_cookie = get_config().cookie
+    is_vercel = os.environ.get("VERCEL") == "1"
 
     ebnr = EBNR(semaphore=api_semaphore.value)
-    if config_cookie:
-        pass
-    elif not cookie_file_path.exists() and cookie_file_type == "object":
-        cookie_file_path.parent.mkdir(parents=True, exist_ok=True)
-        cookie_file_path.write_text("{}", encoding="utf-8")
-    elif not cookie_file_path.exists() and cookie_file_type == "list":
-        cookie_file_path.parent.mkdir(parents=True, exist_ok=True)
-        cookie_file_path.write_text("[]", encoding="utf-8")
 
+    # dynamic create cookie file
+    if not cookie_file_path.exists() and not is_vercel:
+        if cookie_file_type == "object":
+            cookie_file_path.parent.mkdir(parents=True, exist_ok=True)
+            cookie_file_path.write_text("{}", encoding="utf-8")
+        if cookie_file_type == "list":
+            cookie_file_path.parent.mkdir(parents=True, exist_ok=True)
+            cookie_file_path.write_text("[]", encoding="utf-8")
     if config_cookie:
         ebnr.set_cookies(config_cookie)
-    elif cookie_file_type == "object":
-        ebnr.load_cookies_json(cookie_file_path)
-    elif cookie_file_type == "list":
-        ebnr.load_cookies_json_list(cookie_file_path)
+    if not is_vercel:
+        if cookie_file_type == "object":
+            ebnr.load_cookies_json(cookie_file_path)
+        elif cookie_file_type == "list":
+            ebnr.load_cookies_json_list(cookie_file_path)
 
     return ebnr
