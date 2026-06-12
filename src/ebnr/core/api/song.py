@@ -58,7 +58,8 @@ async def get_lyric(
     *,
     cookies: Optional[dict[str, str]] = None,
 ):
-    lyric_data = await raw.song.get_lyric(id, cookies=cookies)
+    if (lyric_data := await raw.song.get_lyric(id, cookies=cookies)) is None:
+        return None
     return parse_lyric_json(lyric_data)
 
 

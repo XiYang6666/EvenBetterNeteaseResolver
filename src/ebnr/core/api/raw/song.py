@@ -65,7 +65,7 @@ async def get_lyric(
     id: int,
     *,
     cookies: Optional[dict[str, str]] = None,
-) -> dict:
+) -> Optional[dict]:
     request_url = "https://interface3.music.163.com/api/song/lyric"
     async with make_client(cookies) as client:
         response = await client.post(
@@ -83,6 +83,8 @@ async def get_lyric(
             },
         )
     result = response.json()
+    if result["code"] == 404:
+        return None
     if result["code"] != 200:
         raise NeteaseApiException(
             "Failed to get lyric",

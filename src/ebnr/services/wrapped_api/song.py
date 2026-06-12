@@ -106,7 +106,7 @@ async def get_audio(
     inactive_ids = [
         song_id for i, song_id in enumerate(ids) if not verify_data_result[i]
     ]
-    inactive_retry_map = dict(
+    retry_inactive_map = dict(
         zip(
             inactive_ids,
             await ebnr_client.value.song.get_audio(inactive_ids, quality, encoding),
@@ -116,16 +116,14 @@ async def get_audio(
     # update retry cache
     mset_data = {
         keys[i]: data
-        for i, data in enumerate(inactive_retry_map.values())
+        for i, data in enumerate(retry_inactive_map.values())
         if data is not None
     }
     await audio_cache.value.mset(mset_data)
 
     # merge data
     return [
-        inactive_retry_map[song_id]
-        if song_id in inactive_retry_map
-        else read_cache_result[i]
+        retry_inactive_map.get(song_id, read_cache_result[i])
         for i, song_id in enumerate(ids)
     ]
 
@@ -134,33 +132,41 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_song_info(ids)
 
+    # read cache
     read_cache_result = await song_cache.value.mget(ids)
 
+    # retry cache miss
     cache_miss_ids = [
         song_id for i, song_id in enumerate(ids) if read_cache_result[i] is None
     ]
-    fetched = await ebnr_client.value.song.get_song_info(cache_miss_ids)
-    inactive_map = dict(zip(cache_miss_ids, fetched))
+    retry_inactive_map = dict(
+        zip(cache_miss_ids, await ebnr_client.value.song.get_song_info(cache_miss_ids))
+    )
 
+    # update retry cache
     mset_data = {
-        song_id: data for song_id, data in inactive_map.items() if data is not None
+        song_id: data
+        for song_id, data in retry_inactive_map.items()
+        if data is not None
     }
     if mset_data:
         await song_cache.value.mset(mset_data)
 
+    # merge data
     return [
-        inactive_map.get(song_id, read_cache_result[i]) for i, song_id in enumerate(ids)
+        retry_inactive_map.get(song_id, read_cache_result[i])
+        for i, song_id in enumerate(ids)
     ]
 
 
-async def get_lyric(id: int) -> LyricData:
+async def get_lyric(id: int) -> Optional[LyricData]:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_lyric(id)
-    return (
-        data
-        if (data := await lyric_cache.value.get(id))
-        else await ebnr_client.value.song.get_lyric(id)
-    )
+    if data := await lyric_cache.value.get(id):
+        return data
+    if result := await ebnr_client.value.song.get_lyric(id):
+        await lyric_cache.value.set(id, result)
+    return result
 
 
 async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
@@ -170,20 +176,19 @@ async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
     key = SearchCacheKey(keyword, limit)
     if data := await search_cache.value.get(key):
         return data
-    else:
-        result = await ebnr_client.value.song.search(keyword, limit)
-        await search_cache.value.set(key, result)
-        return result
+    result = await ebnr_client.value.song.search(keyword, limit)
+    await search_cache.value.set(key, result)
+    return result
 
 
 async def get_playlist(id: int) -> Optional[Playlist]:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_playlist(id)
-    return (
-        data
-        if (data := await playlist_cache.value.get(id))
-        else await ebnr_client.value.song.get_playlist(id)
-    )
+    if data := await playlist_cache.value.get(id):
+        return data
+    if result := await ebnr_client.value.song.get_playlist(id):
+        await playlist_cache.value.set(id, result)
+    return result
 
 
 async def get_tracks(
@@ -191,13 +196,8 @@ async def get_tracks(
 ) -> Optional[list[SongInfo | None]]:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_tracks(id, limit, page)
-
-    if (
-        data := (await playlist_cache.value.get(id))
-        or await ebnr_client.value.song.get_playlist(id)
-    ) is None:
-        return
-
+    if (data := (await get_playlist(id))) is None:
+        return None
     extracted = extract_playlist_tracks(data.track_ids, data.tracks, limit, page)
     return extracted.known + (await get_song_info(extracted.unknown))
 
@@ -205,8 +205,8 @@ async def get_tracks(
 async def get_album(id: int) -> Optional[Album]:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_album(id)
-    return (
-        data
-        if (data := await album_cache.value.get(id))
-        else await ebnr_client.value.song.get_album(id)
-    )
+    if data := await album_cache.value.get(id):
+        return data
+    if result := await ebnr_client.value.song.get_album(id):
+        await album_cache.value.set(id, result)
+    return result
