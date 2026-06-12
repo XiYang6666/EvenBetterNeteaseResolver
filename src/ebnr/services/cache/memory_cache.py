@@ -1,6 +1,6 @@
 import time
 from collections import OrderedDict
-from typing import Optional, cast, overload
+from typing import Mapping, Optional, Sequence, cast, overload
 
 from ebnr.services.cache.base_cache import BaseCache
 
@@ -40,12 +40,7 @@ class MemoryCache[K, V](BaseCache[K, V]):
     def _evict_lru(self) -> None:
         self._cache.popitem(last=False)
 
-    @overload
-    async def get(self, key: K, default: V) -> V: ...
-    @overload
-    async def get(self, key: K, default: None = None) -> V | None: ...
-
-    async def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+    def _get(self, key: K, default: Optional[V] = None) -> Optional[V]:
         entry = self._cache.get(key, MemoryCache._SENTINEL)
         if entry is MemoryCache._SENTINEL:
             return default
@@ -56,13 +51,24 @@ class MemoryCache[K, V](BaseCache[K, V]):
         self._cache.move_to_end(key)
         return value
 
-    async def set(self, key: K, value: V, ttl: float | None = None) -> None:
+    def _set(self, key: K, value: V, ttl: float | None = None) -> None:
         self._evict_expired()
         if key in self._cache:
             self._cache.move_to_end(key)
         elif len(self._cache) >= self._maxsize:
             self._evict_lru()
         self._cache[key] = (value, self._expire_at(ttl))
+
+    @overload
+    async def get(self, key: K, default: V) -> V: ...
+    @overload
+    async def get(self, key: K, default: None = None) -> Optional[V]: ...
+
+    async def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+        return self._get(key, default)
+
+    async def set(self, key: K, value: V, ttl: float | None = None) -> None:
+        return self._set(key, value, ttl)
 
     async def delete(self, key: K) -> bool:
         if key not in self._cache:
@@ -72,3 +78,23 @@ class MemoryCache[K, V](BaseCache[K, V]):
 
     async def exists(self, key: K) -> bool:
         return self._cache.get(key, MemoryCache._SENTINEL) is not MemoryCache._SENTINEL
+
+    @overload
+    async def mget(self, keys: Sequence[K], default: V) -> Sequence[V]: ...
+    @overload
+    async def mget(
+        self, keys: Sequence[K], default: None = None
+    ) -> Sequence[Optional[V]]: ...
+
+    async def mget(
+        self, keys: Sequence[K], default: Optional[V] = None
+    ) -> Sequence[Optional[V]]:
+        if not keys:
+            return []
+        return [self._get(key, default) for key in keys]
+
+    async def mset(self, mapping: Mapping[K, V], ttl: Optional[int] = None):
+        if not mapping:
+            return
+        for k, v in mapping.items():
+            self._set(k, v, ttl)

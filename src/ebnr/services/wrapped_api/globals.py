@@ -8,4 +8,4 @@ from ebnr.utils.http import ssl_context
 from ebnr.utils.lazy import Lazy
 
 api_semaphore = Lazy(lambda: Semaphore(get_config().api_concurrency))
-client = register_resource(httpx.AsyncClient(verify=ssl_context))
+http_client = register_resource(httpx.AsyncClient(verify=ssl_context))

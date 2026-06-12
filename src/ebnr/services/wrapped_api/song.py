@@ -17,10 +17,10 @@ from ebnr.core.types import (
 from ebnr.core.utils import extract_playlist_tracks
 from ebnr.services.cache import make_cache
 from ebnr.services.cache.base_cache import BaseCache
-from ebnr.services.wrapped_api.globals import client
+from ebnr.services.wrapped_api.globals import http_client
 from ebnr.services.wrapped_api.semaphore import get_semaphore
 from ebnr.utils.lazy import Lazy
-from ebnr.utils.semaphore import run_with_semaphore, with_semaphore
+from ebnr.utils.semaphore import with_semaphore
 
 
 @dataclass(frozen=True)
@@ -28,16 +28,6 @@ class AudioCacheKey:
     id: int
     quality: Quality = Quality.STANDARD
     encoding: Encoding = Encoding.FLAC
-
-
-@dataclass(frozen=True)
-class AudioInactive:
-    id: int
-
-
-@dataclass(frozen=True)
-class SongInactive:
-    id: int
 
 
 @dataclass(frozen=True)
@@ -78,89 +68,93 @@ async def get_audio(
     encoding: Encoding = Encoding.FLAC,
 ) -> list[AudioInfo | None]:
     if get_config().audio_cache_timeout == 0 or not get_config().api_cache:
-        return await run_with_semaphore(
-            song.get_audio(ids, quality, encoding), get_semaphore()
-        )
+        await song.get_audio(ids, quality, encoding)
+
+    keys = [AudioCacheKey(song_id, quality, encoding) for song_id in ids]
 
     @with_semaphore(get_semaphore())
     async def verify_url(url: str):
-        response = await client.get(url)
+        response = await http_client.get(url)
         return response.status_code == 200
 
-    async def background_verify_url(url: str, key: AudioCacheKey):
-        if await verify_url(url):
-            return
-        await audio_cache.value.delete(key)
-
-    async def get_from_cache(song_id: int):
-        key = AudioCacheKey(song_id, quality, encoding)
-        data = await audio_cache.value.get(key)
-        if not (data and data.url):
-            return AudioInactive(song_id)
-        if (
-            get_config().audio_cache_validation_type == "sync"
-            and not await verify_url(data.url)  # type: ignore
-        ):
-            # 同步缓存且校验失效
+    async def background_verify_url_task(url: str, key: AudioCacheKey):
+        if not await verify_url(url):
             await audio_cache.value.delete(key)
-            return AudioInactive(song_id)
+
+    async def verify_data(data: Optional[AudioInfo], key: AudioCacheKey):
+        if data is None or data.url is None:
+            return False
+        if get_config().audio_cache_validation_type == "sync" and not await verify_url(
+            data.url
+        ):
+            await audio_cache.value.delete(key)
+            return False
         elif get_config().audio_cache_validation_type == "sync":
-            # 同步缓存且校验成功
-            return data
-        elif get_config().audio_cache_validation_type == "background":
-            # 异步缓存
-            asyncio.create_task(background_verify_url(data.url, key))  # type: ignore
-            return data
+            return True
         else:
-            assert False
+            asyncio.create_task(background_verify_url_task(data.url, key))
+            return True
 
-    read_cache_tasks = [get_from_cache(song_id) for song_id in ids]
-    read_cache_result = await asyncio.gather(*read_cache_tasks)
+    # read cache
+    read_cache_result = await audio_cache.value.mget(keys)
 
-    inactive_ids = [x.id for x in read_cache_result if isinstance(x, AudioInactive)]
-    inactive_map = dict(
+    # verify data
+    verify_data_tasks = [
+        verify_data(data, keys[i]) for i, data in enumerate(read_cache_result)
+    ]
+    verify_data_result = await asyncio.gather(*verify_data_tasks)
+
+    # retry inactive
+    inactive_ids = [
+        song_id for i, song_id in enumerate(ids) if not verify_data_result[i]
+    ]
+    inactive_retry_map = dict(
         zip(inactive_ids, await song.get_audio(inactive_ids, quality, encoding))
     )
 
-    for song_id, audio_data in inactive_map.items():
-        if audio_data is None:
-            continue
-        key = AudioCacheKey(song_id, quality, encoding)
-        await audio_cache.value.set(key, audio_data)
+    # update retry cache
+    mset_data = {
+        keys[i]: data
+        for i, data in enumerate(inactive_retry_map.values())
+        if data is not None
+    }
+    await audio_cache.value.mset(mset_data)
 
+    # merge data
     return [
-        inactive_map[x.id] if isinstance(x, AudioInactive) else x
-        for x in read_cache_result
+        inactive_retry_map[song_id]
+        if song_id in inactive_retry_map
+        else read_cache_result[i]
+        for i, song_id in enumerate(ids)
     ]
 
 
 async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
     if not get_config().api_cache:
-        return await run_with_semaphore(song.get_song_info(ids), get_semaphore())
+        return await song.get_song_info(ids)
 
-    async def get_from_cache(song_id: int):
-        return await song_cache.value.get(song_id) or SongInactive(song_id)
+    read_cache_result = await song_cache.value.mget(ids)
 
-    read_cache_tasks = [get_from_cache(song_id) for song_id in ids]
-    read_cache_result = await asyncio.gather(*read_cache_tasks)
+    cache_miss_ids = [
+        song_id for i, song_id in enumerate(ids) if read_cache_result[i] is None
+    ]
+    fetched = await song.get_song_info(cache_miss_ids)
+    inactive_map = dict(zip(cache_miss_ids, fetched))
 
-    inactive_ids = [x.id for x in read_cache_result if isinstance(x, SongInactive)]
-    inactive_map = dict(zip(inactive_ids, await song.get_song_info(inactive_ids)))
-
-    for song_id, song_data in inactive_map.items():
-        if song_data is None:
-            continue
-        await song_cache.value.set(song_id, song_data)
+    mset_data = {
+        song_id: data for song_id, data in inactive_map.items() if data is not None
+    }
+    if mset_data:
+        await song_cache.value.mset(mset_data)
 
     return [
-        inactive_map[x.id] if isinstance(x, SongInactive) else x
-        for x in read_cache_result
+        inactive_map.get(song_id, read_cache_result[i]) for i, song_id in enumerate(ids)
     ]
 
 
 async def get_lyric(id: int) -> LyricData:
     if not get_config().api_cache:
-        return await run_with_semaphore(song.get_lyric(id), get_semaphore())
+        return await song.get_lyric(id)
     return (
         data if (data := await lyric_cache.value.get(id)) else await song.get_lyric(id)
     )
@@ -181,7 +175,7 @@ async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
 
 async def get_playlist(id: int) -> Optional[Playlist]:
     if not get_config().api_cache:
-        return await run_with_semaphore(song.get_playlist(id), get_semaphore())
+        return await song.get_playlist(id)
     return (
         data
         if (data := await playlist_cache.value.get(id))
@@ -193,9 +187,7 @@ async def get_tracks(
     id: int, limit: int = 1000, page: int = 0
 ) -> Optional[list[SongInfo | None]]:
     if not get_config().api_cache:
-        return await run_with_semaphore(
-            song.get_tracks(id, limit, page), get_semaphore()
-        )
+        return await song.get_tracks(id, limit, page)
 
     if (
         data := (await playlist_cache.value.get(id)) or await song.get_playlist(id)
@@ -208,7 +200,7 @@ async def get_tracks(
 
 async def get_album(id: int) -> Optional[Album]:
     if not get_config().api_cache:
-        return await run_with_semaphore(song.get_album(id), get_semaphore())
+        return await song.get_album(id)
     return (
         data if (data := await album_cache.value.get(id)) else await song.get_album(id)
     )

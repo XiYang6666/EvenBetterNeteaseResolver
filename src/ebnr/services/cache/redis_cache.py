@@ -1,5 +1,5 @@
 import pickle
-from typing import Callable, Optional, overload
+from typing import Callable, Mapping, Optional, Sequence, overload
 
 from redis.asyncio import Redis
 
@@ -50,14 +50,38 @@ class RedisCache[K, V](BaseCache[K, V]):
 
     async def set(self, key: K, value: V, ttl: float | None = None) -> None:
         resolved = self._resolve_ttl(ttl)
+        px = int(resolved * 1000) if resolved > 0 else None  # 永不过期
         raw = pickle.dumps(value, protocol=pickle.HIGHEST_PROTOCOL)
-        if resolved > 0:
-            await self._client.set(self._make_key(key), raw, px=int(resolved * 1000))
-        else:
-            await self._client.set(self._make_key(key), raw)  # 永不过期
+        await self._client.set(self._make_key(key), raw, px=px)
 
     async def delete(self, key: K) -> bool:
         return await self._client.delete(self._make_key(key)) > 0
 
     async def exists(self, key: K) -> bool:
         return await self._client.exists(self._make_key(key)) > 0
+
+    @overload
+    async def mget(self, keys: Sequence[K], default: V) -> Sequence[V]: ...
+    @overload
+    async def mget(
+        self, keys: Sequence[K], default: None = None
+    ) -> Sequence[Optional[V]]: ...
+
+    async def mget(
+        self, keys: Sequence[K], default: Optional[V] = None
+    ) -> Sequence[Optional[V]]:
+        if not keys:
+            return []
+        serialized_keys = [self._make_key(key) for key in keys]
+        raws: list[Optional[bytes]] = await self._client.mget(serialized_keys)  # pyright: ignore[reportAssignmentType]
+        return [default if raw is None else pickle.loads(raw) for raw in raws]
+
+    async def mset(self, mapping: Mapping[K, V], ttl: Optional[int] = None):
+        if not mapping:
+            return
+        resolved = self._resolve_ttl(ttl)
+        px = int(resolved * 1000) if resolved > 0 else None  # 永不过期
+        async with self._client.pipeline() as pipe:
+            for k, v in mapping.items():
+                pipe.set(self._make_key(k), pickle.dumps(v), px=px)
+            await pipe.execute()
