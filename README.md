@@ -42,8 +42,7 @@ services:
 ### Vercel 部署
 
 > [!NOTE]
-> Vercel 的 Serverless 环境不支持持久化文件存储，**Cookie 必须通过环境变量传入**。
-> 如需使用缓存，请配置外部 Redis（推荐 [Upstash](https://upstash.com/)）。
+> Vercel 的 Serverless 环境不支持持久化文件存储, **Cookie 必须通过环境变量传入**.
 
 #### 一键部署
 
