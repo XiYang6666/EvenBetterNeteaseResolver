@@ -1,8 +1,14 @@
+import os
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Literal, Mapping, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
+
+if os.getenv("VERCEL") == "1":
+    sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ebnr.config import get_config, load_config
 from ebnr.router.album import router as album_router

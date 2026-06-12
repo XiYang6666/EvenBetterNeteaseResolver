@@ -20,8 +20,8 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages/ /usr/local/lib/python3.12/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 COPY pyproject.toml pdm.lock ./
-COPY src/ebnr ./ebnr
-COPY config.toml ./
+COPY src/ ./
+COPY config/ ./
 
 ENV EBNR_CONCURRENCY_RESOLVE_PLAYLIST=10
 ENV EBNR_BASE_URL=http://0.0.0.0:8000

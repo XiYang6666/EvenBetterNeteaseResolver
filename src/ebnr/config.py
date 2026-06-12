@@ -21,7 +21,7 @@ class RedisConfig(BaseModel):
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
-        toml_file="config.toml",
+        toml_file="config/config.toml",
         env_prefix="EBNR_",
         env_ignore_empty=True,
         env_nested_delimiter="_",
