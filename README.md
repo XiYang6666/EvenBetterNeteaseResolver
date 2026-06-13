@@ -54,7 +54,7 @@ services:
 
 #### 一键部署
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/XiYang6666/EvenBetterNeteaseResolver&env=EBNR_BASE_URL,EBNR_COOKIE&envDescription=部署所需的环境变量配置&envLink=https://github.com/XiYang6666/EvenBetterNeteaseResolver%23配置)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/XiYang6666/EvenBetterNeteaseResolver&env=EBNR_BASE_URL,EBNR_NETEASE_COOKIE&envDescription=部署所需的环境变量配置&envLink=https://github.com/XiYang6666/EvenBetterNeteaseResolver%23配置)
 
 #### 手动部署步骤
 
@@ -70,11 +70,11 @@ services:
 
 在 Vercel 项目的 **Settings → Environment Variables** 中添加以下变量：
 
-| 变量名               | 必填  | 说明                                                              |
-| -------------------- | ----- | ----------------------------------------------------------------- |
-| `EBNR_BASE_URL`      | true  | Vercel 部署域名，例如 `https://your-app.vercel.app`               |
-| `EBNR_COOKIE`        | false | 网易云音乐 Cookie（JSON 字符串格式），不填则无法解析 VIP 歌曲     |
-| `EBNR_CACHE_BACKEND` | false | 缓存后端, 如果项目配置了 Vercel Storage 的 Redis 应设置为 `redis` |
+| 变量名                | 必填  | 说明                                                              |
+| --------------------- | ----- | ----------------------------------------------------------------- |
+| `EBNR_BASE_URL`       | true  | Vercel 部署域名，例如 `https://your-app.vercel.app`               |
+| `EBNR_NETEASE_COOKIE` | false | 网易云音乐 Cookie（JSON 字符串格式），不填则无法解析 VIP 歌曲     |
+| `EBNR_CACHE_BACKEND`  | false | 缓存后端, 如果项目配置了 Vercel Storage 的 Redis 应设置为 `redis` |
 
 **4. 部署**
 
@@ -91,21 +91,21 @@ API 文档可通过 `https://your-app.vercel.app/docs` 访问。
 
 ### 基础配置
 
-| 配置项                             | 默认值                  | 注释                                                                                    |
-| ---------------------------------- | ----------------------- | --------------------------------------------------------------------------------------- |
-| `EBNR_BASE_UR`                     | `http://127.0.0.1:8000` | API 根路径, 用于 meting-api 正确处理返回值                                              |
-| `EBNR_COOKIE`                      | `None`                  | json 格式 网易云音乐 Cookie 字符串                                                      |
-| `EBNR_COOKIE_FILE_PATH`            | `./data/cookie.json`    | json 格式 网易云音乐 Cookie 文件路径, `EBNR_COOKIE` 设置时无效                          |
-| `EBNR_COOKIE_FILE_TYPE`            | `object`                | json 格式 网易云音乐 Cookie 文件类型, `EBNR_COOKIE` 设置时无效, 可选 `object` 或 `list` |
-| `EBNR_API_CACHE`                   | `true`                  | 是否缓存上游网易云 API 返回值                                                           |
-| `EBNR_CACHE_SIZE`                  | `1024`                  | 上游 API 数据缓存量                                                                     |
-| `EBNR_CACHE_TIMEOUT`               | `86400`                 | 上游 API 数据缓存时长                                                                   |
-| `EBNR_CACHE_BACKEND`               | `memory`                | 缓存后端 ， 可选 `memory` 或 `redis`                                                    |
-| `EBNR_AUDIO_CACHE_TIMEOUT`         | `3600  `                | 音频链接缓存时长, 为 0 则不缓存                                                         |
-| `EBNR_AUDIO_CACHE_VALIDATION_TYPE` | `background`            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效, 可选 `sync` 或 `background`     |
-| `EBNR_RESOLVE_RESPONSE_TYPE`       | `redirect`              | 音频解析返回类型, 可选 `redirect`, `proxy`或 `streaming-proxy`                          |
-| `EBNR_REDIRECT_CODE`               | `307`                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 `307` 或 `302`            |
-| `EBNR_API_CONCURRENCY`             | `200`                   | 上游 API 请求最大并发量                                                                 |
+| 配置项                             | 默认值                  | 注释                                                                                            |
+| ---------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `EBNR_BASE_URL`                     | `http://127.0.0.1:8000` | API 根路径, 用于 meting-api 正确处理返回值                                                      |
+| `EBNR_NETEASE_COOKIE`              | `None`                  | json 格式 网易云音乐 Cookie 字符串                                                              |
+| `EBNR_COOKIE_FILE_PATH`            | `./data/cookie.json`    | json 格式 网易云音乐 Cookie 文件路径, `EBNR_NETEASE_COOKIE` 设置时无效                          |
+| `EBNR_COOKIE_FILE_TYPE`            | `object`                | json 格式 网易云音乐 Cookie 文件类型, `EBNR_NETEASE_COOKIE` 设置时无效, 可选 `object` 或 `list` |
+| `EBNR_API_CACHE`                   | `true`                  | 是否缓存上游网易云 API 返回值                                                                   |
+| `EBNR_CACHE_SIZE`                  | `1024`                  | 上游 API 数据缓存量                                                                             |
+| `EBNR_CACHE_TIMEOUT`               | `86400`                 | 上游 API 数据缓存时长                                                                           |
+| `EBNR_CACHE_BACKEND`               | `memory`                | 缓存后端 ， 可选 `memory` 或 `redis`                                                            |
+| `EBNR_AUDIO_CACHE_TIMEOUT`         | `3600  `                | 音频链接缓存时长, 为 0 则不缓存                                                                 |
+| `EBNR_AUDIO_CACHE_VALIDATION_TYPE` | `background`            | 音频链接缓存策略，EBNR_AUDIO_CACHE_TIMEOUT 为 0 时无效, 可选 `sync` 或 `background`             |
+| `EBNR_RESOLVE_RESPONSE_TYPE`       | `redirect`              | 音频解析返回类型, 可选 `redirect`, `proxy`或 `streaming-proxy`                                  |
+| `EBNR_REDIRECT_CODE`               | `307`                   | 重定向返回码, 当 EBNR_RESOLVE_TYPE 不为 redirect 时无效, 可选 `307` 或 `302`                    |
+| `EBNR_API_CONCURRENCY`             | `200`                   | 上游 API 请求最大并发量                                                                         |
 
 ### Redis 配置
 

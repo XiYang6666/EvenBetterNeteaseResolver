@@ -18,7 +18,7 @@ http_client = register_resource(httpx.AsyncClient(verify=ssl_context))
 def ebnr_client():
     cookie_file_path = Path(get_config().cookie_file_path)
     cookie_file_type = get_config().cookie_file_type
-    config_cookie = get_config().cookie
+    netease_cookie = get_config().netease_cookie
     is_vercel = os.environ.get("VERCEL") == "1"
 
     ebnr = EBNR(semaphore=api_semaphore.value)
@@ -31,8 +31,8 @@ def ebnr_client():
         if cookie_file_type == "list":
             cookie_file_path.parent.mkdir(parents=True, exist_ok=True)
             cookie_file_path.write_text("[]", encoding="utf-8")
-    if config_cookie:
-        ebnr.set_cookies(config_cookie)
+    if netease_cookie:
+        ebnr.set_cookies(netease_cookie)
     if not is_vercel:
         if cookie_file_type == "object":
             ebnr.load_cookies_json(cookie_file_path)

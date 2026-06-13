@@ -1,7 +1,7 @@
 base_url = "http://127.0.0.1:8000"
 cookie_file_path = "./data/cookie.json"
 cookie_file_type = "object"
-#cookie={}
+#netease_cookie={}
 
 api_cache = true
 cache_size = 1024
