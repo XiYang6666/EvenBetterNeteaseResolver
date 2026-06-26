@@ -3,7 +3,7 @@
 
 annotated-doc==0.0.4
 annotated-types==0.7.0
-anyio==4.13.0
+anyio==4.14.1
 certifi==2026.5.20
 cffi==2.0.0; platform_python_implementation != "PyPy"
 click==8.4.1
