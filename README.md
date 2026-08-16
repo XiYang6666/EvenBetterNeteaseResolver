@@ -11,10 +11,14 @@
 >
 > 如需解析 VIP 歌曲, 请按照下文教程自行部署项目, 并使用有 VIP 的网易云音乐账号的 Cookie 配置项目.
 
+> [!IMPORTANT]
+> 如果你在搭建用于 [Etched-Extension](https://github.com/XiYang6666/etched-extension) 的 API, 请先阅读 https://github.com/XiYang6666/EvenBetterNeteaseResolver/issues/4
+
 > [!TIP]
 > **如何获取网易云 Cookie？**
 >
 > 详见: [获取网易云音乐 Cookie](docs/get-cookie.md)
+
 
 ## 部署
 
