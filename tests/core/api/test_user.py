@@ -1,5 +1,4 @@
 import pytest
-
 from ebnr.core.api.raw.user import get_user_info
 
 

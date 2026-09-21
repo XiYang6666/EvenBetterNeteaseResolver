@@ -1,6 +1,5 @@
 import os
 from asyncio import Semaphore, TaskGroup
-from typing import Optional
 
 import pytest
 import pytest_asyncio
@@ -64,8 +63,8 @@ def make_links(type: str, id: int):
 async def get(
     client: AsyncClient,
     link: str,
-    params: Optional[dict] = None,
-    sem: Optional[Semaphore] = None,
+    params: dict | None = None,
+    sem: Semaphore | None = None,
 ):
     if sem:
         async with sem:
@@ -79,8 +78,8 @@ async def get(
 async def post(
     client: AsyncClient,
     link: str,
-    json: Optional[dict] = None,
-    sem: Optional[Semaphore] = None,
+    json: dict | None = None,
+    sem: Semaphore | None = None,
 ):
     if sem:
         async with sem:

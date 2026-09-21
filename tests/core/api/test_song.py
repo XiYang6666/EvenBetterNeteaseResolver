@@ -1,7 +1,6 @@
 import itertools
 
 import pytest
-
 from ebnr.core.api.song import (
     get_album,
     get_audio,
@@ -11,6 +10,7 @@ from ebnr.core.api.song import (
     get_tracks,
     search,
 )
+
 from tests.core.constants import (
     ALBUM_LIST,
     ID_LIST,

@@ -1,8 +1,8 @@
 import itertools
 
 import pytest
-
 from ebnr.core.client import EBNR
+
 from tests.core.constants import (
     ALBUM_LIST,
     ID_LIST,
