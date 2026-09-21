@@ -1,7 +1,7 @@
 import os
 from contextlib import asynccontextmanager
 from dataclasses import fields, is_dataclass
-from typing import Any, TypeAlias, cast
+from typing import Any, cast
 
 from redis.asyncio import BlockingConnectionPool, Redis
 
