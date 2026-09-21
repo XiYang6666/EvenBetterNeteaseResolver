@@ -1,0 +1,3 @@
+[submodule "libs/ebnr-core"]
+	path = libs/ebnr-core
+	url = https://github.com/XiYang6666/EBNR-Core.git
