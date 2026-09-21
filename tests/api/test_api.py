@@ -5,7 +5,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient, Limits
 
-from ebnr import app
+from ebnr.app import app
 
 VALID_ALBUM_ID = 38591089
 VALID_SONG_ID = 557581314
