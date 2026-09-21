@@ -8,18 +8,18 @@ RUN pip install -U pip -i $PIP_INDEX_URL
 RUN pip install pdm
 
 COPY pyproject.toml pdm.lock ./
+COPY libs/ libs/
 
-RUN pdm export --without-hashes --prod -f requirements -o requirements.txt
-RUN pip install -r requirements.txt -i $PIP_INDEX_URL
+RUN pdm export --without-hashes --prod -f requirements -o requirements.txt \
+ && sed -i -E 's|^-e (\./[^#]+)#egg=.*|\1|' requirements.txt \
+ && pip install -r requirements.txt -i $PIP_INDEX_URL
 
 FROM python:3.12-alpine
 
 WORKDIR /app
 
-
 COPY --from=builder /usr/local/lib/python3.12/site-packages/ /usr/local/lib/python3.12/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
-COPY pyproject.toml pdm.lock ./
 COPY src/ ./
 COPY config/ ./
 
