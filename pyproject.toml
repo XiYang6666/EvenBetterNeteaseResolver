@@ -19,7 +19,11 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [dependency-groups]
-dev = ["pytest>=9.0.3", "pytest-asyncio>=1.4.0"]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.8",
+]
 
 [build-system]
 requires = ["pdm-backend"]
@@ -34,6 +38,7 @@ dev = "uvicorn ebnr.app:app --host 0.0.0.0 --reload"
 test = "pytest"
 build-docker = "docker build . --tag xiyang6666/ebnr --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple/"
 push-docker = "docker push xiyang6666/ebnr"
+format = "ruff check --fix ./src"
 
 [tool.pdm.workspace]
 members = ["libs/ebnr-core"]
@@ -41,4 +46,4 @@ members = ["libs/ebnr-core"]
 extend-select = ["I"]
 
 [tool.vercel]
-entrypoint = "src.ebnr.app:app"
+entrypoint = "ebnr.app:app"
