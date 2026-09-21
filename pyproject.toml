@@ -47,4 +47,4 @@ members = ["libs/ebnr-core"]
 extend-select = ["I"]
 
 [tool.vercel]
-entrypoint = "sec.ebnr.app:app"
+entrypoint = "src.ebnr.app:app"
