@@ -46,5 +46,8 @@ members = ["libs/ebnr-core"]
 [tool.ruff.lint]
 extend-select = ["I"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Body", "fastapi.Query"]
+
 [tool.vercel]
 entrypoint = "src.ebnr.app:app"

@@ -55,7 +55,7 @@ async def audio_query(
     elif link:
         assert link
         link_info_list = list(map(parse_netease_link, link))
-        if any(map(lambda x: x is None or x.type != "song", link_info_list)):
+        if any(x is None or x.type != "song" for x in link_info_list):
             raise HTTPException(400, "Invalid Link")
         ids = [cast(NeteaseLinkInfo, i).id for i in link_info_list]
         data = await get_audio(ids)
@@ -97,7 +97,7 @@ async def audio_post(body: PostAudio = Body(...)) -> AudioInfo | list[AudioInfo 
     elif body.links:
         assert body.links
         link_info_list = list(map(parse_netease_link, body.links))
-        if any(map(lambda x: x is None or x.type != "song", link_info_list)):
+        if any(x is None or x.type != "song" for x in link_info_list):
             raise HTTPException(400, "Invalid Link")
         ids = [cast(NeteaseLinkInfo, i).id for i in link_info_list]
         data = await get_audio(ids, quality=body.quality)

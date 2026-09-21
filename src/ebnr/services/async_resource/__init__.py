@@ -8,7 +8,7 @@ from ebnr.utils.lazy import AsyncLazy, Lazy
 class AsyncContextManagerProtocol(Protocol):
     async def __aenter__(self) -> Any: ...
     async def __aexit__(
-        self, exc_type: Any, exc_value: Any, traceback: Any, /
+        self, exc_type: Any, exc_value: Any, traceback: Any, /  # noqa: PYI036
     ) -> bool | None: ...
 
 

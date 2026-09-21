@@ -49,7 +49,7 @@ async def test_cache():
     await redis_client.value.ping()
 
 
-BaseTypes: TypeAlias = str | int | bool
+type BaseTypes = str | int | bool
 
 
 def base_serializer(data: BaseTypes):
