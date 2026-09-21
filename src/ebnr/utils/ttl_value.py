@@ -1,6 +1,6 @@
 import time
-from collections.abc import Callable
-from typing import Coroutine, cast
+from collections.abc import Callable, Coroutine
+from typing import cast
 
 
 class TTLValue[T]:

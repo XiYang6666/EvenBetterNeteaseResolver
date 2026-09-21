@@ -1,12 +1,11 @@
 import urllib.parse
 from dataclasses import dataclass
-from typing import Optional
 
+from ebnr.core.types import SongInfo
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from ebnr.config import get_config
-from ebnr.core.types import SongInfo
 from ebnr.services.wrapped_api.song import (
     get_audio,
     get_lyric,
@@ -21,8 +20,8 @@ router = APIRouter(prefix="/meting", tags=["meting-api 兼容接口"])
 class MetingResult:
     name: str
     artist: str
-    url: Optional[str]
-    pic: Optional[str]
+    url: str | None
+    pic: str | None
     lrc: str
 
     @classmethod
@@ -38,7 +37,7 @@ class MetingResult:
 
 @router.get("/")
 @router.head("/", include_in_schema=False)
-async def meting(type: str, id: int, server: Optional[str] = None):
+async def meting(type: str, id: int, server: str | None = None):
     """
     meting-api 兼容接口, 详见 [meting-api](https://github.com/injahow/meting-api)
     """

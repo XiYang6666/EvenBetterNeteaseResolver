@@ -1,6 +1,7 @@
 import time
 from collections import OrderedDict
-from typing import Mapping, Optional, Sequence, cast, overload
+from collections.abc import Mapping, Sequence
+from typing import cast, overload
 
 from ebnr.services.cache.base_cache import BaseCache
 
@@ -40,7 +41,7 @@ class MemoryCache[K, V](BaseCache[K, V]):
     def _evict_lru(self) -> None:
         self._cache.popitem(last=False)
 
-    def _get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+    def _get(self, key: K, default: V | None = None) -> V | None:
         entry = self._cache.get(key, MemoryCache._SENTINEL)
         if entry is MemoryCache._SENTINEL:
             return default
@@ -62,9 +63,9 @@ class MemoryCache[K, V](BaseCache[K, V]):
     @overload
     async def get(self, key: K, default: V) -> V: ...
     @overload
-    async def get(self, key: K, default: None = None) -> Optional[V]: ...
+    async def get(self, key: K, default: None = None) -> V | None: ...
 
-    async def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+    async def get(self, key: K, default: V | None = None) -> V | None:
         return self._get(key, default)
 
     async def set(self, key: K, value: V, ttl: float | None = None) -> None:
@@ -84,16 +85,16 @@ class MemoryCache[K, V](BaseCache[K, V]):
     @overload
     async def mget(
         self, keys: Sequence[K], default: None = None
-    ) -> Sequence[Optional[V]]: ...
+    ) -> Sequence[V | None]: ...
 
     async def mget(
-        self, keys: Sequence[K], default: Optional[V] = None
-    ) -> Sequence[Optional[V]]:
+        self, keys: Sequence[K], default: V | None = None
+    ) -> Sequence[V | None]:
         if not keys:
             return []
         return [self._get(key, default) for key in keys]
 
-    async def mset(self, mapping: Mapping[K, V], ttl: Optional[int] = None):
+    async def mset(self, mapping: Mapping[K, V], ttl: int | None = None):
         if not mapping:
             return
         for k, v in mapping.items():

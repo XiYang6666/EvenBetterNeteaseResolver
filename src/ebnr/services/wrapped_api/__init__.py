@@ -5,7 +5,7 @@ from ebnr.utils.ttl_value import AsyncTTLValue
 
 from . import song
 
-__all__ = ["song", "is_vip"]
+__all__ = ["is_vip", "song"]
 
 
 async def is_vip_loader() -> bool:

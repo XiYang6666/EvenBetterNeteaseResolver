@@ -1,9 +1,7 @@
 import asyncio
 import ssl
 from dataclasses import dataclass
-from typing import Optional
 
-from ebnr.config import get_config
 from ebnr.core.types import (
     Album,
     AudioInfo,
@@ -14,6 +12,8 @@ from ebnr.core.types import (
     SongInfo,
 )
 from ebnr.core.utils import extract_playlist_tracks
+
+from ebnr.config import get_config
 from ebnr.services.cache import make_cache
 from ebnr.services.cache.base_cache import BaseCache
 from ebnr.services.wrapped_api.globals import api_semaphore, ebnr_client, http_client
@@ -79,7 +79,7 @@ async def get_audio(
         if not await verify_url(url):
             await audio_cache.value.delete(key)
 
-    async def verify_data(data: Optional[AudioInfo], key: AudioCacheKey):
+    async def verify_data(data: AudioInfo | None, key: AudioCacheKey):
         if data is None or data.url is None:
             return False
         if get_config().audio_cache_validation_type == "sync" and not await verify_url(
@@ -159,7 +159,7 @@ async def get_song_info(ids: list[int]) -> list[SongInfo | None]:
     ]
 
 
-async def get_lyric(id: int) -> Optional[LyricData]:
+async def get_lyric(id: int) -> LyricData | None:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_lyric(id)
     if data := await lyric_cache.value.get(id):
@@ -181,7 +181,7 @@ async def search(keyword: str, limit: int = 10) -> list[SongInfo]:
     return result
 
 
-async def get_playlist(id: int) -> Optional[Playlist]:
+async def get_playlist(id: int) -> Playlist | None:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_playlist(id)
     if data := await playlist_cache.value.get(id):
@@ -193,7 +193,7 @@ async def get_playlist(id: int) -> Optional[Playlist]:
 
 async def get_tracks(
     id: int, limit: int = 1000, page: int = 0
-) -> Optional[list[SongInfo | None]]:
+) -> list[SongInfo | None] | None:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_tracks(id, limit, page)
     if (data := (await get_playlist(id))) is None:
@@ -202,7 +202,7 @@ async def get_tracks(
     return extracted.known + (await get_song_info(extracted.unknown))
 
 
-async def get_album(id: int) -> Optional[Album]:
+async def get_album(id: int) -> Album | None:
     if not get_config().api_cache:
         return await ebnr_client.value.song.get_album(id)
     if data := await album_cache.value.get(id):

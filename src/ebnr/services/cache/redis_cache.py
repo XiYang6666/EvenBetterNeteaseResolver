@@ -1,5 +1,6 @@
 import pickle
-from typing import Callable, Mapping, Optional, Sequence, overload
+from collections.abc import Callable, Mapping, Sequence
+from typing import overload
 
 from redis.asyncio import Redis
 
@@ -41,7 +42,7 @@ class RedisCache[K, V](BaseCache[K, V]):
     @overload
     async def get(self, key: K, default: None = None) -> V | None: ...
 
-    async def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+    async def get(self, key: K, default: V | None = None) -> V | None:
         raw = await self._client.get(self._make_key(key))
         assert not isinstance(raw, str), RedisCache.REDIS_RAW_MODE_ERROR_MSG
         if raw is None:
@@ -65,18 +66,18 @@ class RedisCache[K, V](BaseCache[K, V]):
     @overload
     async def mget(
         self, keys: Sequence[K], default: None = None
-    ) -> Sequence[Optional[V]]: ...
+    ) -> Sequence[V | None]: ...
 
     async def mget(
-        self, keys: Sequence[K], default: Optional[V] = None
-    ) -> Sequence[Optional[V]]:
+        self, keys: Sequence[K], default: V | None = None
+    ) -> Sequence[V | None]:
         if not keys:
             return []
         serialized_keys = [self._make_key(key) for key in keys]
-        raws: list[Optional[bytes]] = await self._client.mget(serialized_keys)  # pyright: ignore[reportAssignmentType]
+        raws: list[bytes | None] = await self._client.mget(serialized_keys)  # pyright: ignore[reportAssignmentType]
         return [default if raw is None else pickle.loads(raw) for raw in raws]
 
-    async def mset(self, mapping: Mapping[K, V], ttl: Optional[int] = None):
+    async def mset(self, mapping: Mapping[K, V], ttl: int | None = None):
         if not mapping:
             return
         resolved = self._resolve_ttl(ttl)

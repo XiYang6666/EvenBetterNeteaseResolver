@@ -1,11 +1,11 @@
 import urllib.parse
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import cast
 
+from ebnr.core.types import Playlist
 from fastapi import APIRouter, Body, HTTPException
 from fastapi.responses import RedirectResponse
 
-from ebnr.core.types import Playlist
 from ebnr.services.wrapped_api.song import get_playlist
 from ebnr.utils.netease import parse_netease_link
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/playlist", tags=["歌单"])
 
 @router.get("/{link:path}", response_model=Playlist)
 @router.head("/{link:path}", include_in_schema=False)
-async def playlist_link(link: str, id: Optional[int] = None):
+async def playlist_link(link: str, id: int | None = None):
     """
     根据网易云音乐链接获取歌单信息, 无法获取时返回错误码 404.
     """
@@ -32,8 +32,8 @@ async def playlist_link(link: str, id: Optional[int] = None):
 @router.get("")
 @router.head("", include_in_schema=False)
 async def playlist_get(
-    id: Optional[int] = None,
-    link: Optional[str] = None,
+    id: int | None = None,
+    link: str | None = None,
 ) -> Playlist:
     """
     ## 获取歌单信息
@@ -60,8 +60,8 @@ async def playlist_get(
 
 @dataclass
 class PostPlaylist:
-    id: Optional[int] = None
-    link: Optional[str] = None
+    id: int | None = None
+    link: str | None = None
 
     def __post_init__(self):
         if not self.id and not self.link:

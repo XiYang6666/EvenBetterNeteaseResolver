@@ -1,11 +1,11 @@
 import urllib.parse
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import cast
 
+from ebnr.core.types import AudioInfo, Quality
 from fastapi import APIRouter, Body, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
-from ebnr.core.types import AudioInfo, Quality
 from ebnr.services.wrapped_api.song import get_audio
 from ebnr.utils.netease import NeteaseLinkInfo, parse_netease_link
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/audio", tags=["音频信息"])
 
 @router.get("/{link:path}", response_model=AudioInfo)
 @router.head("/{link:path}", include_in_schema=False)
-async def audio_link(link: str, id: Optional[int] = None):
+async def audio_link(link: str, id: int | None = None):
     """
     根据网易云音乐链接获取音频信息, 无法获取时返回错误码 404.
     """
@@ -32,8 +32,8 @@ async def audio_link(link: str, id: Optional[int] = None):
 @router.get("")
 @router.head("", include_in_schema=False)
 async def audio_query(
-    id: Optional[list[int]] = Query(None),
-    link: Optional[list[str]] = Query(None),
+    id: list[int] | None = Query(None),
+    link: list[str] | None = Query(None),
     quality: Quality = Quality.STANDARD,
 ) -> AudioInfo | list[AudioInfo | None]:
     """
@@ -67,10 +67,10 @@ async def audio_query(
 
 @dataclass
 class PostAudio:
-    id: Optional[int] = None
-    ids: Optional[list[int]] = None
-    link: Optional[str] = None
-    links: Optional[list[str]] = None
+    id: int | None = None
+    ids: list[int] | None = None
+    link: str | None = None
+    links: list[str] | None = None
     quality: Quality = Quality.STANDARD
 
     def __post_init__(self):

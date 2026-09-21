@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 from pydantic_settings import (
@@ -13,8 +13,8 @@ class RedisConfig(BaseModel):
     host: str = "localhost"
     port: int = Field(default=6379, ge=0, le=65535)
     db: int = Field(default=0, ge=0, le=15)
-    username: Optional[str] = None
-    password: Optional[str] = None
+    username: str | None = None
+    password: str | None = None
     prefix: str = "ebnr:"
     max_connections: int = 50
 
@@ -45,7 +45,7 @@ class Config(BaseSettings):
 
     base_url: str = "http://127.0.0.1:8000"
 
-    netease_cookie: Optional[dict[str, str]] = Field(default=None, exclude=True)
+    netease_cookie: dict[str, str] | None = Field(default=None, exclude=True)
     cookie_file_path: str = Field(default="./data/cookie.json", exclude=True)
     cookie_file_type: Literal["object", "list"] = "object"
 

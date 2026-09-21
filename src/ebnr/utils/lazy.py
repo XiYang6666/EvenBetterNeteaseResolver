@@ -1,4 +1,5 @@
-from typing import Callable, Coroutine, cast, override
+from collections.abc import Callable, Coroutine
+from typing import cast, override
 
 
 class Lazy[T]:

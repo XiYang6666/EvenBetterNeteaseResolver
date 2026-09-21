@@ -3,9 +3,9 @@ from asyncio import Semaphore
 from pathlib import Path
 
 import httpx
+from ebnr.core.client import EBNR
 
 from ebnr.config import get_config
-from ebnr.core.client import EBNR
 from ebnr.services.async_resource import register_resource
 from ebnr.utils.http import ssl_context
 from ebnr.utils.lazy import Lazy

@@ -1,8 +1,9 @@
 import os
 import sys
+from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Literal, Mapping, Optional
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
@@ -58,7 +59,7 @@ app.include_router(meting_router)
 
 
 @app.get("/{link:path}", response_class=RedirectResponse)
-async def root_link(link: str, id: Optional[int] = None):
+async def root_link(link: str, id: int | None = None):
     """自动根据传入的网易云音乐链接重定向至对应的路由"""
     link_info = parse_netease_link(link, id)
     if link_info is None:

@@ -1,11 +1,11 @@
 import urllib.parse
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import cast
 
+from ebnr.core.types import Album
 from fastapi import APIRouter, Body, HTTPException
 from fastapi.responses import RedirectResponse
 
-from ebnr.core.types import Album
 from ebnr.services.wrapped_api.song import get_album
 from ebnr.utils.netease import parse_netease_link
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/album", tags=["专辑"])
 
 @router.get("/{link:path}", response_model=Album)
 @router.head("/{link:path}", include_in_schema=False)
-async def album_link(link: str, id: Optional[int] = None):
+async def album_link(link: str, id: int | None = None):
     """
     根据网易云音乐链接获取专辑信息, 无法获取时返回错误码 404.
     """
@@ -32,8 +32,8 @@ async def album_link(link: str, id: Optional[int] = None):
 @router.get("")
 @router.head("", include_in_schema=False)
 async def album_get(
-    id: Optional[int] = None,
-    link: Optional[str] = None,
+    id: int | None = None,
+    link: str | None = None,
 ) -> Album:
     """
     ## 获取专辑信息
@@ -60,8 +60,8 @@ async def album_get(
 
 @dataclass
 class PostAlbum:
-    id: Optional[int] = None
-    link: Optional[str] = None
+    id: int | None = None
+    link: str | None = None
 
     def __post_init__(self):
         if not self.id and not self.link:

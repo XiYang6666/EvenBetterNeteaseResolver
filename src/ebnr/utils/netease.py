@@ -1,7 +1,7 @@
 import re
 import urllib.parse
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 
 @dataclass
@@ -12,8 +12,8 @@ class NeteaseLinkInfo:
 
 
 def parse_netease_link(
-    link: str, query_id: Optional[int] = None
-) -> Optional[NeteaseLinkInfo]:
+    link: str, query_id: int | None = None
+) -> NeteaseLinkInfo | None:
     url = urllib.parse.urlparse(link)
     # 检查 scheme
     if url.scheme not in ["", "http", "https"]:

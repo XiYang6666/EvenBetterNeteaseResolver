@@ -1,7 +1,7 @@
 import inspect
 from asyncio import Semaphore
+from collections.abc import Coroutine
 from functools import wraps
-from typing import Coroutine
 
 
 def with_semaphore(sem: Semaphore):
