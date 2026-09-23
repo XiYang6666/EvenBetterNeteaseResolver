@@ -53,7 +53,7 @@ type BaseTypes = str | int | bool
 
 
 def base_serializer(data: BaseTypes):
-    assert isinstance(data, BaseTypes)
+    assert isinstance(data, BaseTypes.__value__)
     if isinstance(data, str):
         return data
     return str(data)
@@ -67,7 +67,7 @@ def dataclass_serializer(data: Any):
 
 
 def serializer(data: Any):
-    if isinstance(data, BaseTypes):
+    if isinstance(data, BaseTypes.__value__):
         return base_serializer(data)
     elif is_dataclass(data):
         return dataclass_serializer(data)
