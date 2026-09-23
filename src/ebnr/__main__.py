@@ -1,4 +1,4 @@
-from ebnr import app
+from ebnr.app import app
 
 if __name__ == "__main__":
     import uvicorn
