@@ -10,7 +10,7 @@ click==8.5.0
 colorama==0.4.6; sys_platform == "win32"
 cryptography==50.0.1
 -e ./libs/ebnr-core#egg=EBNR-Core
-fastapi==0.141.1
+fastapi==0.142.2
 h11==0.16.0
 h2==4.3.0
 hpack==4.1.0
